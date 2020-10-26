@@ -7,12 +7,12 @@ Today, we are going to teach you a way to create your own text classifier which 
     - Set up the IMDb dataset into the input format of RoBERTa  
     - Use the IMDb dataset to pre-train the model  
     - Save the model’s weight to use for transfer learning
-2. [Use the saved weights to implement Transfer Learning](Creating-Classifier-with-Transfer-Learning)  
+2. [Use the saved weights to implement Transfer Learning](#Creating-Classifier-with-Transfer-Learning)  
     - Use the saved weights from Step 1 and recreate the RoBERTa model
     - Set up the IMDb into the input format of RoBERTa
     - Use the recreated model and train it using the IMDb dataset changing the final layer only
     - Test the model using the reserved test set and save the results  
-3. [Deploy the model on Heroku server](Deploy-Deep-Learning-Model-using-Flask)  
+3. [Deploy the model on Heroku server](#Deploy-Deep-Learning-Model-using-Flask)  
     - Create a Flask backend
     - Create a React front-end
     - Synchronize the front-end and back-end
@@ -21,7 +21,7 @@ The whole tutorial is broken down into these 3 sections to make it easier and si
 
 ## Dataset
 #### IMDb Dataset
-The IMDb dataset is made available at [http://ai.stanford.edu/~amaas/data/sentiment/](http://ai.stanford.edu/~amaas/data/sentiment/), it has 25000 highly polar movie reviews for training and other 25000 for testing. The class distribution of these reviews is almost equal, i.e. the number of positive reviews is approximately equal to the number of negative reviews, hence no class biasness would occur during the pre-training of the model. We took the complete 50000 tweets of the dataset and divided them in the ratio of 8:1:1 for training, validation and testing.  
+The IMDb dataset is made available at [http://ai.stanford.edu/~amaas/data/sentiment/](http://ai.stanford.edu/~amaas/data/sentiment/), it has 25000 highly polar movie reviews for training and other 25000 for testing. The class distribution of these reviews is almost equal, i.e. the number of positive reviews is approximately equal to the number of negative reviews, hence no class biasness would occur during the pre-training of the model. We took the complete 50000 tweets of the dataset and divided them in the ratio of 8:1:1 for training, validation and testing. We have used a pre-processed version of the dataset, which can be downloaded from our repository from [here](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Dataset/IMDB_prePro.csv), you can also view the pre-processing script available [here](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Notebook/pre-processing.ipynb)  
 
 
 ## Pre-training Customized RoBERTa
@@ -242,16 +242,70 @@ The graph below shows the change in Training set and Validation losses as the tr
 ![Pre-Train Training and Validation set Loss Graph](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/TrainValidLossGraph.png)  
 As seen from the graph above, the validation set loss is lower than the training set loss. This occurs due to our Dropout layer. The dropout layer randomly drops a fraction of neurons during the training, which leads to a decrease in accuracy, but this makes the model more robust, as now the model would perform much better when no nodes are dropped during validation and testing. The image below contains the confusion matrix generated during the pre-training.  
 ![Pre-Train Test set Confusion Matrix](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/ConfusionMatrix.png)  
-The model mislabels 973 labels from the test set. And the ratio of mislabel is almost balenced, hence there are no chances of the model being biased in any way.
+The respecctive F1 scores for the classes are 0.8036 and 0.8072. And the ratio of mislabel is almost balenced, hence there are no chances of the model being biased in any way.   
+
 ## Creating Classifier with Transfer Learning
-We first start with setting up the hyperparameters just like we did for the pre-training part. These hyperparameters and their values remain the same. Since the dataset remians the same in this step, the pre-processing step for the dataset remains the same as above.   
-We then create the exact same replica of our customized RoBERTa model. In the next piece of code, we create lists to store the training loss, validation loss and global steps. These shall be used to plot the trends in losses during the training period. Then we initiate the classifier, only to use the ```torch.load()``` to load the saved model instead of a random initiation. This is known as creating the transfer model. Since the architectures of both the models are same, we don’t need to make any changes to the load function. Once again, we set the best validation loss to infinity and the loss function to Cross Entropy Loss. The epochs are started similarly, and the training progresses. Also, it must be noticed that, this time we have not frozen the RoBERTa layers, and allowed them to train as well. This ensures that the model fits itself to the dataset well. The rest of the training procedure is exactly same as that of the pre-training method. We freeze the weights during the testing of validation set, and store both the training and testing losses in our lists. The model having least validation loss is saved and then can be deployed on the Web Application, which we will discuss in the further sections of our tutorial. The code for this part remains exaclty same as for that of the Pre-training hence it is not mentioned again.
+We first start with setting up the hyperparameters just like we did for the pre-training part. These hyperparameters and their values remain the same. Since the dataset remians the same in this step, the steps remain the same, with only change in variable name as follows
+```
+CLASSIFIER_MAX_SEQ_LEN = 256
+CLASSIFIER_TRAIN_BATCH_SIZE = 32
+CLASSIFIER_VAL_BATCH_SIZE = 64
+CLASSIFIER_TEST_BATCH_SIZE = 64
+PAD_INDEX = tokenizer.convert_tokens_to_ids(tokenizer.pad_token)
+UNK_INDEX = tokenizer.convert_tokens_to_ids(tokenizer.unk_token)
+CLASSIFIER_DATASET_PATH = "./final_prepro1.csv"
+
+review_field = Field(use_vocab=False, 
+                   tokenize=tokenizer.encode, 
+                   include_lengths=False, 
+                   batch_first=True,
+                   fix_length=CLASSIFIER_MAX_SEQ_LEN, 
+                   pad_token=PAD_INDEX, 
+                   unk_token=UNK_INDEX)
+
+label_field = Field(sequential=False, use_vocab=False, batch_first=True)
+
+fields = {'review' : ('review', review_field), 'label' : ('label', label_field)}
+
+
+train, valid, test = TabularDataset(path=CLASSIFIER_DATASET_PATH, 
+                                                   format='CSV', 
+                                                   fields=fields, 
+                                                   skip_header=False).split(split_ratio=[0.70, 0.1, 0.2], 
+                                                                            stratified=True, 
+                                                                            strata_field='label')
+
+training_set_iterC = Iterator(train, batch_size=CLASSIFIER_TRAIN_BATCH_SIZE, device=device, train=True, shuffle=True, sort=False)
+valid_set_iterC = Iterator(valid, batch_size=CLASSIFIER_VAL_BATCH_SIZE, device=device, train=False, shuffle=False, sort=False)
+test_set_iterC = Iterator(test, batch_size=CLASSIFIER_TEST_BATCH_SIZE, device=device, train=False, shuffle=False, sort=False)
+```
+We then create the exact same replica of our customized RoBERTa model. In the next piece of code, we create lists to store the training loss, validation loss and global steps. These shall be used to plot the trends in losses during the training period. Then we initiate the classifier, only to use the ```torch.load()``` to load the saved model instead of a random initiation. This is known as creating the transfer model. Since the architectures of both the models are same, we don’t need to make any changes to the load function. Once again, we set the best validation loss to infinity and the loss function to Cross Entropy Loss. The epochs are started similarly, and the training progresses. Also, it must be noticed that, this time we have not frozen the RoBERTa layers, and allowed them to train as well. This ensures that the model fits itself to the dataset well. The rest of the training procedure is exactly same as that of the pre-training method. We freeze the weights during the testing of validation set, and store both the training and testing losses in our lists. The model having least validation loss is saved and then can be deployed on the Web Application, which we will discuss in the further sections of our tutorial. The code for this part remains exaclty same as for that of the Pre-training hence it is not mentioned again.  
+The classifier training is initiated using  
+```
+
+CLASSIFIER_NUM_EPOCHS = 20
+steps_per_epoch = len(training_set_iter)
+
+CLASSIFIER_model = ROBERTA()
+CLASSIFIER_model = CLASSIFIER_model.to(device)
+preTrained = torch.load("./best_pre_train_model.pth")
+CLASSIFIER_model.load_state_dict(preTrained, strict=False)
+
+CLASSIFIER_optimizer = AdamW(CLASSIFIER_model.parameters(), lr=1e-4)
+CLASSIFIER_scheduler = get_linear_schedule_with_warmup(CLASSIFIER_optimizer, 
+                                            num_warmup_steps=steps_per_epoch*1, 
+                                            num_training_steps=steps_per_epoch*CLASSIFIER_NUM_EPOCHS)
+print('Training starts')
+classifier(model=CLASSIFIER_model,optimizer=CLASSIFIER_optimizer, training_set_iter=training_set_iter, valid_set_iter=valid_set_iter,  scheduler=CLASSIFIER_scheduler, num_epochs=CLASSIFIER_NUM_EPOCHS)
+```
+So, the model runs for 20 epochs and the outcome is generated as  
+![Final Training Statistics](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/FinalTrainStats.png)  
 In the last piece of our code, we use the final model for the test set. We use the ```torch.no_grad()``` to freeze the weights again, and test the model. Once the model is trained, we can compare it with the previous model, to evaluate if the model has improved or degraded in terms of classifying quality.  
 The image below shows the trends in Training and Validation set losses.  
 ![Final train Training and Validation set Loss Graph](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/TrainValidLossGraphFinalTraining.png)  
 As noticed earlier, the losses for validation set is still lower as compared to that of training set due to our Dropout layer. The confusion matrix below gives us a comparison for the test set.  
 ![Final Train Test set Confusion Matrix](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/ConfusionMatrixFinal.png)  
-As compared from the Pre-train confusion matrix, the final classifier mislabels 939 labels, hence the misclassfication error has also reduced. Hence concluding that, transfer learning helps to increase the performance when used for similar datasets.  
+As compared from the Pre-train confusion matrix, the final classifier has an improved F1 score of 0.8108 and 0.8136, hence the misclassfication error has also reduced. Hence concluding that, transfer learning helps to increase the performance when used for similar datasets.  
 In the end we save the model using ```torch.save(model.state_dict(), "modelName.pth")``` so that it can be deployed to our web application.
 
 
@@ -297,13 +351,4 @@ Since, Heroku only allows a total space of 500Mb to be uploaded, we could not ho
 ## Summarizing it all
 The project is finally complete. To summarize it, here is the encapsulated version of it all. We first created a pre-trained model of our choice, which was transferred to an exact replica, the replica was trained on a similar dataset (same dataset) in our tutorial. This model was then saved for deployment. A flask application was created which had functions to handle the post and get requests from the front-end. The flask application has a prediction.py file which loads the saved model and uses it to make predictions. Then we created a front-end using React, where the user can enter reviews through a form and get the desired output sentiment. The demonstration for the latter part was done using a simple LSTM model due to limitations in space. The final application was then hosted on Heroku server.
 
-
-
-
-## Transfer Learning
-When dealing with many classification or segmentation problems in deep learning, the available dataset might not be at par with the problem. One of the major problems is the availability of very limited datasets. There exist many solutions to deal with these problems, Transfer learning is one of them. So, the very first question is what is transfer learning? Transfer learning is a research problem in machine learning that focuses on storing the knowledge a model gains while solving a problem and then use that knowledge to solve a similar problem. For example, a model which already knows how to differentiate between the sentiment of reviews can be used to differentiate between sentiments overall with just a little buff. This buff is known are re-training the model. In other words, we first train the model on a large dataset available for a similar task as our problem, save that knowledge, use that knowledge and train the model on a part of our task’s dataset and then test its performance. Transfer learning has shown great advancements in the field of cancer subtype discovery, building utilization, general game playing, text classification and other tasks. 
-In our tutorial, we take a Pre-trained RoBERTa model, transfer that learning to the IMDb dataset, and then further transfer that learning to our IMDb dataset. Now that Transfer learning is dealt with, let us begin with the pre-training of our model. Here are some papers which discuss Transfer Learning in various Deep Learning tasks:
-- [ADVERSARIALLY ROBUST TRANSFER LEARNING](https://openreview.net/pdf?id=ryebG04YvB)
-- [A Survey on Deep Transfer Learning](https://arxiv.org/abs/1808.01974)
-- [Self-taught Learning: Transfer Learning from Unlabeled Data](https://dl.acm.org/doi/abs/10.1145/1273496.1273592)  
 
