@@ -1,8 +1,8 @@
 # Transfer Learning Model hosted on Heroku using React & Flask
 
 ## Introduction
-Today, we are going to teach you a way to create your own text classifier which can be used to check whether the sentiment a sentence carries is positive or negative. The implementation of this deep learning model is based on RoBERTa, which is a Robustly Optimized BERT Pretraining approach. This pre-trained RoBERTa model is first pre-trained on the [IMDb dataset](IMDb-Dataset), after which the learning was transferred to the IMDb dataset again. To make the model presentable to a user, we will be deploying it on a front-end application created using ReactJS. The contents of this tutorial are given as follows:
-1. [Pre-training](Pre-training-Customized-RoBERTa)  
+Today, we are going to teach you a way to create your own text classifier which can be used to check whether the sentiment a sentence carries is positive or negative. The implementation of this deep learning model is based on RoBERTa, which is a Robustly Optimized BERT Pretraining approach. This pre-trained RoBERTa model is first pre-trained on the [IMDb dataset](#IMDb-Dataset), after which the learning was transferred to the IMDb dataset again. To make the model presentable to a user, we will be deploying it on a front-end application created using ReactJS. The contents of this tutorial are given as follows:
+1. [Pre-training](#Pre-training-Customized-RoBERTa)  
     - Download the pre-trained RoBERTa model  
     - Set up the IMDb dataset into the input format of RoBERTa  
     - Use the IMDb dataset to pre-train the model  
