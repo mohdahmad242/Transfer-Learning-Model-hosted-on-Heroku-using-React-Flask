@@ -59,7 +59,41 @@ The architecture of the customized RoBERTa model that we have used is shown in t
 We now proceed to the pre-training of our customized model.
 
 ## Pre-training Customized RoBERTa
-The pre-training steps are quite simple to understand. The pseudo-code for the training can be given as:  
+The pre-training steps are quite simple to understand. The code given below would pre-process the data for input into the model.  
+```
+MAX_SEQ_LEN = 256
+PRE_TRAINING_TRAIN_BATCH_SIZE = 32
+PRE_TRAINING_VAL_BATCH_SIZE = 64
+PRE_TRAINING_TEST_BATCH_SIZE = 64
+PAD_INDEX = tokenizer.convert_tokens_to_ids(tokenizer.pad_token)
+UNK_INDEX = tokenizer.convert_tokens_to_ids(tokenizer.unk_token)
+PRE_TRAINING_DATASET_PATH = "./IMDB_prePro1.csv"
+
+# Define columns to read.
+review_field = Field(use_vocab=False, 
+                   tokenize=tokenizer.encode, 
+                   include_lengths=False, 
+                   batch_first=True,
+                   fix_length=MAX_SEQ_LEN, 
+                   pad_token=PAD_INDEX, 
+                   unk_token=UNK_INDEX)
+label_field = Field(sequential=False, use_vocab=False, batch_first=True)
+
+fields = {'review' : ('review', review_field), 'label' : ('label', label_field)}
+
+
+train, valid, test = TabularDataset(path=PRE_TRAINING_DATASET_PATH, 
+                                                   format='CSV', 
+                                                   fields=fields, 
+                                                   skip_header=False).split(split_ratio=[0.70, 0.1, 0.2], 
+                                                                            stratified=True, 
+                                                                            strata_field='label')
+
+training_set_iter = Iterator(train, batch_size=PRE_TRAINING_TRAIN_BATCH_SIZE, device=device, train=True, shuffle=True, sort=False)
+valid_set_iter = Iterator(valid, batch_size=PRE_TRAINING_VAL_BATCH_SIZE, device=device, train=False, shuffle=False, sort=False)
+test_set_iter = Iterator(test, batch_size=PRE_TRAINING_TEST_BATCH_SIZE, device=device, train=False, shuffle=False, sort=False)
+```
+As explained above, the ```Field``` function is used to create two fields for the reviews and sentiments respectively. The fields are then passed on the the ```TabularDataset``` function, which takes the file from the ```PRE_TRAINING_DATASET_PATH``` and converts it into a PyTorch dataset. The ```Iteraor``` then divides the dataset into respective batches of mentioned batch size. Since the pre-processing is exactly same for the Classifier model, the same code will be used there too. Now that the data is manipulated for the input format, let us take a look at the model. The pseudo-code for the training can be given as:  
 ```
 epoch starts
 training and validation loss set to zero
@@ -75,7 +109,69 @@ if current validation loss < previous least validation loss:
 	save weights
 weights are unfreezed and epoch ends
 ```
-This pseudo code is very simple to understand. Now let’s look at the code and the explanation. As you can see, we have set  
+This pseudo code is very simple to understand. The original implementation would look something like:
+```
+train_loss_list = []
+val_loss_list = []
+epc_list = []
+
+def pretrain(model, optimizer, training_set_iter, valid_set_iter, scheduler, num_epochs):
+    
+    # Pretrain linear layers, do not train bert
+    for param in model.roberta.parameters():
+        param.requires_grad = False
+    
+    model.train()
+    
+    criterion = torch.nn.CrossEntropyLoss()
+    best_valid_loss = float('Inf')
+    
+    
+    for epoch in range(num_epochs):
+        train_loss = 0.0
+        valid_loss = 0.0 
+        for (review, label), _ in training_set_iter:
+            mask = (review != PAD_INDEX).type(torch.uint8)
+            y_pred = model(input_ids=review, attention_mask=mask)
+            loss = criterion(y_pred, label)
+            loss.backward()
+            optimizer.step()    
+            scheduler.step()
+            optimizer.zero_grad()
+            train_loss += loss.item()
+                
+        model.eval()
+        with torch.no_grad():                    
+            for (review, target), _ in valid_set_iter:
+                mask = (review != PAD_INDEX).type(torch.uint8)
+                y_pred = model(input_ids=review, attention_mask=mask)
+                loss = criterion(y_pred, target)
+                valid_loss += loss.item()
+
+        train_loss = train_loss / len(training_set_iter)
+        valid_loss = valid_loss / len(valid_set_iter)
+        
+        train_loss_list.append(train_loss)
+        val_loss_list.append(valid_loss)
+        epc_list.append(epoch)
+
+        # print summary
+        print('Epoch [{}/{}], Pre-Training Loss: {:.4f}, Val Loss: {:.4f}'
+              .format(epoch+1, num_epochs, train_loss, valid_loss))
+        if best_valid_loss > valid_loss:
+            best_valid_loss = valid_loss 
+            # Saving Best Pre-Trained Model as .pth file
+            torch.save({'model_state_dict': model.state_dict()}, "./best_pre_train_model.pth")
+    
+    # Set bert parameters back to trainable
+    for param in model.roberta.parameters():
+        param.requires_grad = True
+     
+    
+        
+    print('Pre-training done!')
+```
+Now let’s look at the code and the explanation. As you can see, we have set  
 ```
 param.requires_grad = False
 ```
@@ -91,11 +187,30 @@ As we don’t want our model to update the gradients during the validation perio
 
 ## Creating Classifier with Transfer Learning
 We first start with setting up the hyperparameters just like we did for the pre-training part. These hyperparameters and their values remain the same. Since the dataset remians the same in this step, the pre-processing step for the dataset remains the same as above.   
-We then create the exact same replica of our customized RoBERTa model. In the next piece of code, we create lists to store the training loss, validation loss and global steps. These shall be used to plot the trends in losses during the training period. Then we initiate the classifier, only to use the ```torch.load()``` to load the saved model instead of a random initiation. This is known as creating the transfer model. Since the architectures of both the models are same, we don’t need to make any changes to the load function. Once again, we set the best validation loss to infinity and the loss function to Cross Entropy Loss. The epochs are started similarly, and the training progresses. Also, it must be noticed that, this time we have not frozen the RoBERTa layers, and allowed them to train as well. This ensures that the model fits itself to the dataset well. The rest of the training procedure is exactly same as that of the pre-training method. We freeze the weights during the testing of validation set, and store both the training and testing losses in our lists. The model having least validation loss is saved and then can be deployed on the Web Application, which we will discuss in the further sections of our tutorial.  
+We then create the exact same replica of our customized RoBERTa model. In the next piece of code, we create lists to store the training loss, validation loss and global steps. These shall be used to plot the trends in losses during the training period. Then we initiate the classifier, only to use the ```torch.load()``` to load the saved model instead of a random initiation. This is known as creating the transfer model. Since the architectures of both the models are same, we don’t need to make any changes to the load function. Once again, we set the best validation loss to infinity and the loss function to Cross Entropy Loss. The epochs are started similarly, and the training progresses. Also, it must be noticed that, this time we have not frozen the RoBERTa layers, and allowed them to train as well. This ensures that the model fits itself to the dataset well. The rest of the training procedure is exactly same as that of the pre-training method. We freeze the weights during the testing of validation set, and store both the training and testing losses in our lists. The model having least validation loss is saved and then can be deployed on the Web Application, which we will discuss in the further sections of our tutorial. The code for this part remains exaclty same as for that of the Pre-training hence it is not mentioned again.
 In the last piece of our code, we use the final model for the test set. We use the ```torch.no_grad()``` to freeze the weights again, and test the model. The predicted labels are then used to generate a classification report using the sklearn library. The model is saved using ```torch.save(model.state_dict(), "modelName.pth")```
 
 ## Deploy Deep Learning Model using Flask
 Now that our classification model is ready and saved, we can deploy it using a simple Flask application. Before we start with the code, let us see what Flask is. Flask is a simple web application framework for Python, which allows the user to write applications without worrying about protocol or thread management. You can learn more about Flask from their official documentation [here](https://flask.palletsprojects.com/en/1.1.x/).  
+```
+state_dict = torch.load(cwd + '/ml_model/modelFinal.pth', map_location=torch.device('cpu'))
+model.load_state_dict(state_dict, strict=False)
+
+
+def pred(text):
+    print("Text Received =>", text)
+    word_seq = np.array([vocab[word] for word in text.split() 
+                      if word in vocab.keys()])
+    word_seq = np.expand_dims(word_seq,axis=0)
+    t = torch.from_numpy(word_seq).to(torch.int64)
+    length = torch.LongTensor([1])
+    output = model(t, length)
+    print("Got output - ",output)
+    pro = (output.item())
+    status = "positive" if pro < 0.5 else "negative"
+    return status
+```
+The above code snippet is our predict function which takes the input text and then proceeds to use the model to predict the sentiment. We first convert our input text into the vocabulary input and then convert these into PyTorch tensors. The tensors are then given to the model, which returns the ```output```.  
 In our Flask application, we add the saved model, and a [predict.py](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Webapp/Flask/ml_model/predict.py) file that makes the predictions. This pred.py file contains the architecture of the model, that would load the saved weights of the model. Since, we had space limitations for deployment, we used a simple LSTM model to demonstrate this part. The code remains exactly same for deploying RoBERTa, only the class ```LSTM()``` would be replaced by our RoBERTa model. This model that we have used is explained in the end for your understanding. In the pred.py file, we create the model and then load the saved weights using ```model.load_state_dict()``` function, then we have a function ```pred()``` that uses the model to predict the incoming review request. The front-end sends the review using a form which has been created using Prediction component which will be explained in the next section. For now let us just think of it as simple input parameter sent by the front-end application. The model then predicts the sentiment and returns the sentiment. The app.py file contains the encapsulation of our request and post API. We use the POST API to send the final sentiment of the tweet to our front-end. Now that our back-end is complete, we can proceed with our Front-end application. The description of our front-end application is mentioned in the next section.  
 
 ## Creating a React Front-End
@@ -108,7 +223,8 @@ This would download the required libraries to the folder and you can initiate th
 cd my-app
 npm start
 ```
-The next step would be to create the required components for our application. Before we get into the details of components, let us see what components in React actually mean. As per the official React documentation, components are similar to Javascript functions, which take arbitrary inputs and return React elements which describe what should appear on the screen. In simple language they are pieces of code, that can be used repeatedly and exist independently. More details about components can be found [here](https://reactjs.org/docs/react-component.html). We create the components in the in the [componenets folder](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/tree/main/Webapp/React/src/components). We have created two components named as Example and Prediction. The [example.js](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Webapp/React/src/components/example.js) component contains the details of the examples visible on our webpage, while the [prediction.js](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Webapp/React/src/components/prediction.js) component contains a form, which allows us to submit a sentence for testing the sentiment. This testing of the sentence is executed using our custom created API, which sends a request to the server containing the sentence. The server receives the request, tests the sentence using the classifier and then returns the sentiment using get request. The visuals of the project can be changed by making changes in the from the [index.css](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Webapp/React/src/index.css) file.  
+The next step would be to create the required components for our application. Before we get into the details of components, let us see what components in React actually mean. As per the official React documentation, components are similar to Javascript functions, which take arbitrary inputs and return React elements which describe what should appear on the screen. In simple language they are pieces of code, that can be used repeatedly and exist independently. More details about components can be found [here](https://reactjs.org/docs/react-component.html). We create the components in the in the [componenets folder](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/tree/main/Webapp/React/src/components). We have created two components named as Example and Prediction. The Example component uses a simple Render function to display the examples, while the Prediction component uses a Form group.  
+The [example.js](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Webapp/React/src/components/example.js) component contains the details of the examples visible on our webpage, while the [prediction.js](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Webapp/React/src/components/prediction.js) component contains a form, which allows us to submit a sentence for testing the sentiment. This testing of the sentence is executed using our custom created API, which sends a request to the server containing the sentence. The server receives the request, tests the sentence using the classifier and then returns the sentiment using get request. The visuals of the project can be changed by making changes in the from the [index.css](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Webapp/React/src/index.css) file.  
 
 ## LSTM Model used in Web Application
 Since, Heroku only allows a total space of 500Mb to be uploaded, we could not host our final RoBERTa model there due to its humongous size. To demonstrate the working of our web application we decided to proceed with a lighter LSTM model. You can find the architecture of the model in [predict.py](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Webapp/Flask/ml_model/predict.py) file. The model is defined in the class ```LSTM()```. The model has an embedding layer of size 500, which takes the sentences and returns the vocabulary embedding of the words. Then we have a bidirectional LSTM layer having 128 units, the bidirectional nature of the layer allows the model to look at the sentence in both front and back order. We then have a Dropout layer which drops 30% of the words LSTM output units during training. This makes our model more robust and would increase the accuracy during testing as explained above. The final layer is a Linear layer having single output. If the output is smaller than 0.5, we annotate it to the negative class, while having a value greater than 0.5 means the sentence belongs to the positive class. This brings us to  the end of our tutorial.
