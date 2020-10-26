@@ -1,65 +1,31 @@
 # Transfer Learning Model hosted on Heroku using React & Flask
 
 ## Introduction
-Online platforms have been acting as an open platform for people to express their views. But sometimes, these expressions lead to discussions, and these discussions might turn into debates when a difference in opinion arises. It takes no time for such discussion forums to get dirty and people to start spreading negativity. There exist many measures to counter these negative comments, Artificial Intelligence Classification and Detection being one of them. Is it not wonderful that a computer that only understands 0 and 1, the famous binary numbers can also be trained to have a human level perception of texts?  
-Today, we are going to teach you a way to create your own text classifier which can be used to check whether the sentiment a sentence carries is positive or negative. The implementation of this deep learning model is based on RoBERTa, which is a Robustly Optimized BERT Pretraining approach. This pre-trained RoBERTa model is first pre-trained on the IMDb dataset, after which the learning was transferred to the SST2 dataset. To make the model presentable to a user, we will be deploying it on a front-end application created using ReactJS. The contents of this tutorial are given as follows:
-1. Pre-training  
+Today, we are going to teach you a way to create your own text classifier which can be used to check whether the sentiment a sentence carries is positive or negative. The implementation of this deep learning model is based on RoBERTa, which is a Robustly Optimized BERT Pretraining approach. This pre-trained RoBERTa model is first pre-trained on the [IMDb dataset](IMDb-Dataset), after which the learning was transferred to the IMDb dataset again. To make the model presentable to a user, we will be deploying it on a front-end application created using ReactJS. The contents of this tutorial are given as follows:
+1. [Pre-training](Pre-training-Customized-RoBERTa)  
     - Download the pre-trained RoBERTa model  
     - Set up the IMDb dataset into the input format of RoBERTa  
     - Use the IMDb dataset to pre-train the model  
     - Save the model’s weight to use for transfer learning
-2. Use the saved weights to implement Transfer Learning  
+2. [Use the saved weights to implement Transfer Learning](Creating-Classifier-with-Transfer-Learning)  
     - Use the saved weights from Step 1 and recreate the RoBERTa model
     - Set up the IMDb into the input format of RoBERTa
     - Use the recreated model and train it using the IMDb dataset changing the final layer only
     - Test the model using the reserved test set and save the results  
-3. Deploy the model on Heroku server  
+3. [Deploy the model on Heroku server](Deploy-Deep-Learning-Model-using-Flask)  
     - Create a Flask backend
     - Create a React front-end
     - Synchronize the front-end and back-end
     - Deploy the project using Heroku  
-The whole tutorial is broken down into these 3 sections to make it easier and simpler to understand. But before we begin, here is the explanation of a few terminologies which will be frequently used throughout the tutorial.  
-
-## Important Terminologies
-- **MAX_SEQ_LEN**: This hyperparameter is used to define the maximum length of a sentence which will be taken into consideration. That is, the maximum number of words from each review which will be provided to the model.
-- **PRE_TRAINING_TRAIN_BATCH_SIZE**: The number of reviews after which the model updates its weights. In simple terms, it is the number of reviews after which loss is calculated and weights are revised on the basis of loss. A smaller training batch size means that the weights are updated more frequently.
-- **PRE_TRAINING_VAL_BATCH_SIZE**: The number of reviews which will be given to the model during the validation of the model. During the validation period, the weights of the model are frozen to check its performance against a completely new dataset.
-- **PAD_INDEX**: As discussed in the MAX_SEQ_LEN, all reviews must have the same length when they are fed into the model. While the longer reviews are trimmed, the shorter ones are padded by adding 0 either at the beginning or at the end of the sentence. This task is done by PAD_INDEX.
-- **UNK_INDEX**: It might be possible that not all words present in the reviews might be available in the vocabulary files, this can be due to multi-lingual reviews, authors making typos while posting the reviews or many such reasons. The UNK_INDEX is used to handle these unknown or out-of-vocabulary words by changing all them to zero.
-- **Field**: Field is a pre-defined class model in Pytorch which is used to create a datatype that converts sentences or words to tensors. It contains the instructions like how to tokenize the sentences, maximum sentence length to be taken into consideration, type of padding, how to handle unknown vocabulary, etc. More information about field can be found at the official documentation of Pytorch [here](https://pytorch.org/text/data.html#field).
-- **TabularDataset**: TabularDataset creates a dataset in either CSV, TSV or JSON format given the path of the file and the Fields to be considered. We have used the CSV format with a 0.8, 0.1, 0.1 split for train, test and validation dataset for the IMDb dataset, and for the SST2 dataset the ratios were set to 0.7, 0.1 and 0.2. To know more about TabularDataset, try the Pytorch official documentation [here](https://pytorch.org/text/data.html#tabulardataset).
-- **Iterator**: As discussed in the PRE_TRAINING_TRAIN_BATCH_SIZE, the training dataset is divided into batches before being fed to the network. This division of batches of the training, validation or testing data is performed by the Iterator function which loads the batches from the provided dataset.
-This concludes our discussion for the important terminologies which will be used repeatedly. Now we move forward to the dataset being used.
+The whole tutorial is broken down into these 3 sections to make it easier and simpler to understand. The first section is the Pre-training of our RoBERTa model. But before that we would throw some light on the dataset we have used.  
 
 ## Dataset
 #### IMDb Dataset
-The IMDb dataset is made available at [http://ai.stanford.edu/~amaas/data/sentiment/](http://ai.stanford.edu/~amaas/data/sentiment/), it has 25000 highly polar movie reviews for training and other 25000 for testing. The high polar nature of these reviews makes it a good pre-training dataset as the features extracted from these texts would relate highly to the positive or negative nature of the reviews. In simple words, the more polar or contrasting the two classes are, the better will be the pre-training model in distinguishing between the classes. Also, the class distribution of these reviews is almost equal, i.e. the number of positive reviews is approximately equal to the number of negative reviews, hence no class biasness would occur during the pre-training of the model. We took the complete 50000 tweets of the dataset and divided them in the ratio of 8:1:1 for training, validation and testing.  
+The IMDb dataset is made available at [http://ai.stanford.edu/~amaas/data/sentiment/](http://ai.stanford.edu/~amaas/data/sentiment/), it has 25000 highly polar movie reviews for training and other 25000 for testing. The class distribution of these reviews is almost equal, i.e. the number of positive reviews is approximately equal to the number of negative reviews, hence no class biasness would occur during the pre-training of the model. We took the complete 50000 tweets of the dataset and divided them in the ratio of 8:1:1 for training, validation and testing.  
 
-## Transfer Learning
-When dealing with many classification or segmentation problems in deep learning, the available dataset might not be at par with the problem. One of the major problems is the availability of very limited datasets. There exist many solutions to deal with these problems, Transfer learning is one of them. So, the very first question is what is transfer learning? Transfer learning is a research problem in machine learning that focuses on storing the knowledge a model gains while solving a problem and then use that knowledge to solve a similar problem. For example, a model which already knows how to differentiate between the sentiment of reviews can be used to differentiate between sentiments overall with just a little buff. This buff is known are re-training the model. In other words, we first train the model on a large dataset available for a similar task as our problem, save that knowledge, use that knowledge and train the model on a part of our task’s dataset and then test its performance. Transfer learning has shown great advancements in the field of cancer subtype discovery, building utilization, general game playing, text classification and other tasks. 
-In our tutorial, we take a Pre-trained RoBERTa model, transfer that learning to the IMDb dataset, and then further transfer that learning to our IMDb dataset. Now that Transfer learning is dealt with, let us begin with the pre-training of our model. Here are some papers which discuss Transfer Learning in various Deep Learning tasks:
-- [ADVERSARIALLY ROBUST TRANSFER LEARNING](https://openreview.net/pdf?id=ryebG04YvB)
-- [A Survey on Deep Transfer Learning](https://arxiv.org/abs/1808.01974)
-- [Self-taught Learning: Transfer Learning from Unlabeled Data](https://dl.acm.org/doi/abs/10.1145/1273496.1273592)  
-
-## Model Architecture
-The model we have used is a RoBERTa model with some added layers. The layers added to the RoBERTa model are as follows:
-- Dropout Layer having 0.3 dropout rate
-- Linear Layer having shape (768, 256)
-- Layer Normalization
-- Linear Layer having shape (256, 64)
-- Layer Normalization
-- Dropout Layer having 0.3 dropout rate
-- Linear Layer having shape (64, 2)  
-The function of all these layers is explained as follows:
-- Dropout Layer: A dropout layer removes a fraction of the inputs at random. The fraction of inputs which are to be removed is given by the dropout rate. So, a 0.3 dropout rate means that 30% of the inputs to this layer will not be given forward, and the order of these excluded neurons is chosen at a random so that no bias occurs.
-- Linear Layer: A linear layer has two input parameters, the number of input units and the number of output units. It takes the number of input units and fits them into the multiple linear equation to give the output units. We have three additional linear layers attached to out RoBERTa model which have shapes (768, 256), (256, 64) and (64, 2) the last linear layer gives two outputs, which are taken as the probability of the input belonging to the two respective classes.
-- Layer Normalization: A normalization layer uses the mean and the variance of the inputs and normalizes the distributions of the layer, i.e. it makes sure that all the units of the layer are normalized to facilitate smoother gradients and faster training. We have used the normalization layer after the first two linear layers in our model.
-The architecture of the customized RoBERTa model that we have used is shown in the figure below.
-We now proceed to the pre-training of our customized model.
 
 ## Pre-training Customized RoBERTa
-The pre-training steps are quite simple to understand. The code given below would pre-process the data for input into the model.  
+The pre-training steps are quite simple to understand. The code given below would manipulate the data for input into the model.  
 ```
 MAX_SEQ_LEN = 256
 PRE_TRAINING_TRAIN_BATCH_SIZE = 32
@@ -93,23 +59,61 @@ training_set_iter = Iterator(train, batch_size=PRE_TRAINING_TRAIN_BATCH_SIZE, de
 valid_set_iter = Iterator(valid, batch_size=PRE_TRAINING_VAL_BATCH_SIZE, device=device, train=False, shuffle=False, sort=False)
 test_set_iter = Iterator(test, batch_size=PRE_TRAINING_TEST_BATCH_SIZE, device=device, train=False, shuffle=False, sort=False)
 ```
-As explained above, the ```Field``` function is used to create two fields for the reviews and sentiments respectively. The fields are then passed on the the ```TabularDataset``` function, which takes the file from the ```PRE_TRAINING_DATASET_PATH``` and converts it into a PyTorch dataset. The ```Iteraor``` then divides the dataset into respective batches of mentioned batch size. Since the pre-processing is exactly same for the Classifier model, the same code will be used there too. Now that the data is manipulated for the input format, let us take a look at the model. The pseudo-code for the training can be given as:  
+The various terms that have been used in the code above are explained as follow:
+- **MAX_SEQ_LEN**: This hyperparameter is used to define the maximum length of a sentence which will be taken into consideration. That is, the maximum number of words from each review which will be provided to the model.
+- **PRE_TRAINING_TRAIN_BATCH_SIZE**: The number of reviews after which the model updates its weights. In simple terms, it is the number of reviews after which loss is calculated and weights are revised on the basis of loss. A smaller training batch size means that the weights are updated more frequently.
+- **PRE_TRAINING_VAL_BATCH_SIZE**: The number of reviews which will be given to the model during the validation of the model. During the validation period, the weights of the model are frozen to check its performance against a completely new dataset.
+- **PAD_INDEX**: As discussed in the MAX_SEQ_LEN, all reviews must have the same length when they are fed into the model. While the longer reviews are trimmed, the shorter ones are padded by adding 0 either at the beginning or at the end of the sentence. This task is done by PAD_INDEX.
+- **UNK_INDEX**: It might be possible that not all words present in the reviews might be available in the vocabulary files, this can be due to multi-lingual reviews, authors making typos while posting the reviews or many such reasons. The UNK_INDEX is used to handle these unknown or out-of-vocabulary words by changing all them to zero.
+- **Field**: Field is a pre-defined class model in Pytorch which is used to create a datatype that converts sentences or words to tensors. It contains the instructions like how to tokenize the sentences, maximum sentence length to be taken into consideration, type of padding, how to handle unknown vocabulary, etc. More information about field can be found at the official documentation of Pytorch [here](https://pytorch.org/text/data.html#field).
+- **TabularDataset**: TabularDataset creates a dataset in either CSV, TSV or JSON format given the path of the file and the Fields to be considered. We have used the CSV format with a 0.8, 0.1, 0.1 split for train, test and validation dataset for the IMDb dataset, and for the SST2 dataset the ratios were set to 0.7, 0.1 and 0.2. To know more about TabularDataset, try the Pytorch official documentation [here](https://pytorch.org/text/data.html#tabulardataset).
+- **Iterator**: As discussed in the PRE_TRAINING_TRAIN_BATCH_SIZE, the training dataset is divided into batches before being fed to the network. This division of batches of the training, validation or testing data is performed by the Iterator function which loads the batches from the provided dataset.
+This concludes our discussion for the important terminologies which will be used repeatedly. Now let us continue with the model.  
+
+## Model Architecture
+The code snipped below mentions our customised RoBERTa model, encapsulated in a class.
 ```
-epoch starts
-training and validation loss set to zero
-for batch in batches:
-	model is fit to batch
-	losses are calculated using loss function
-	derivatives are calculated
-	derivatives are subtracted from weight matrices
-	batch ends
-weights are frozen
-validation set is used to calculate validation performance and loss
-if current validation loss < previous least validation loss:
-	save weights
-weights are unfreezed and epoch ends
+class ROBERTA(torch.nn.Module):
+    def __init__(self, dropout_rate=0.3):
+        super(ROBERTA, self).__init__()
+        
+        self.roberta = RobertaModel.from_pretrained('roberta-base')
+        self.d1 = torch.nn.Dropout(dropout_rate)
+        self.l1 = torch.nn.Linear(768, 256)
+        self.bn1 = torch.nn.LayerNorm(256)
+        self.l2 = torch.nn.Linear(256, 64)
+        self.bn2 = torch.nn.LayerNorm(64)
+        self.d2 = torch.nn.Dropout(dropout_rate)
+        self.l3 = torch.nn.Linear(64, 2)
+        
+    def forward(self, input_ids, attention_mask):
+        _, x = self.roberta(input_ids=input_ids, attention_mask=attention_mask)
+        x = self.d1(x)
+        x = self.l1(x)
+        x = self.bn1(x)
+        x = self.l2(x)
+        x = self.bn2(x)
+        x = torch.nn.Tanh()(x)
+        x = self.d2(x)
+        x = self.l3(x)
+        
+        return x
 ```
-This pseudo code is very simple to understand. The original implementation would look something like:
+The model we have used is a RoBERTa model with some added layers. The layers added to the RoBERTa model are as follows:
+- Dropout Layer having 0.3 dropout rate
+- Linear Layer having shape (768, 256)
+- Layer Normalization
+- Linear Layer having shape (256, 64)
+- Layer Normalization
+- Dropout Layer having 0.3 dropout rate
+- Linear Layer having shape (64, 2)  
+The function of all these layers is explained as follows:
+- Dropout Layer: A dropout layer removes a fraction of the inputs at random. The fraction of inputs which are to be removed is given by the dropout rate. So, a 0.3 dropout rate means that 30% of the inputs to this layer will not be given forward, and the order of these excluded neurons is chosen at a random so that no bias occurs.
+- Linear Layer: A linear layer has two input parameters, the number of input units and the number of output units. It takes the number of input units and fits them into the multiple linear equation to give the output units. We have three additional linear layers attached to out RoBERTa model which have shapes (768, 256), (256, 64) and (64, 2) the last linear layer gives two outputs, which are taken as the probability of the input belonging to the two respective classes.
+- Layer Normalization: A normalization layer uses the mean and the variance of the inputs and normalizes the distributions of the layer, i.e. it makes sure that all the units of the layer are normalized to facilitate smoother gradients and faster training. We have used the normalization layer after the first two linear layers in our model.
+The architecture of the customized RoBERTa model that we have used is shown in the figure below.
+We now proceed to the pre-training of our customized model.
+The original implementation would look something like:
 ```
 train_loss_list = []
 val_loss_list = []
@@ -183,7 +187,58 @@ Then the losses are calculated which take the predicted values and the original 
 ```
 with torch.no_grad():
 ```
-As we don’t want our model to update the gradients during the validation period. We then calculate the predictions and calculate the validation loss. We then calculate this validation loss to our best validation loss, in case our validation loss comes out to be less, the model is saved and the training continues as usual. If the loss is more, the model is not saved and the training continues as usual. This makes sure that we only save those checkpoints, where the model best fits our validation dataset, helping us to curb overfitting. Once the training is complete, we set the training parameters of RoBERTa back to true. This was the explanation of the pretrain function. The next piece of code, sets the hyperparameters and calls the function to initiate the pre-training. The model is run for 12 epochs, and the model having best validation accuracy is saved. In the next section we will use this saved model to create our classifier and test its performance. The graph below shows the change in Training set and Validation losses as the training of the model progresses.  
+As we don’t want our model to update the gradients during the validation period. We then calculate the predictions and calculate the validation loss. We then calculate this validation loss to our best validation loss, in case our validation loss comes out to be less, the model is saved and the training continues as usual. If the loss is more, the model is not saved and the training continues as usual. This makes sure that we only save those checkpoints, where the model best fits our validation dataset, helping us to curb overfitting. Once the training is complete, we set the training parameters of RoBERTa back to true. This was the explanation of the pretrain function. The next piece of code, sets the hyperparameters and calls the function to initiate the pre-training. The model is run for 12 epochs, and the model having best validation accuracy is saved. In the next section we will use this saved model to create our classifier and test its performance.  
+The model can be evaluated using the script given below. 
+```
+def evaluate(model, test_loader):
+    y_pred = []
+    y_true = []
+
+    model.eval()
+    with torch.no_grad():
+        for (source, target), _ in test_loader:
+                mask = (source != PAD_INDEX).type(torch.uint8)
+                
+                output = model(source, attention_mask=mask)
+
+                y_pred.extend(torch.argmax(output, axis=-1).tolist())
+                y_true.extend(target.tolist())
+    
+    print('Classification Report:')
+    print(classification_report(y_true, y_pred, labels=[1,0], digits=4))
+    
+    cm = confusion_matrix(y_true, y_pred, labels=[1,0])
+    ax = plt.subplot()
+
+    sns.heatmap(cm, annot=True, ax = ax, cmap='Blues', fmt="d")
+
+    ax.set_title('Confusion Matrix')
+
+    ax.set_xlabel('Predicted Labels')
+    ax.set_ylabel('True Labels')
+
+    ax.xaxis.set_ticklabels(['negative', 'positive'])
+    ax.yaxis.set_ticklabels(['negative', 'positive'])
+```
+Now that we have the means to evaluate our model, let us initiate the pre-training. This can be done using
+```
+PRE_TRAINING_NUM_EPOCHS = 12
+steps_per_epoch = len(training_set_iter)
+
+PRE_TRAINING_model = ROBERTA(0.4)
+PRE_TRAINING_model = PRE_TRAINING_model.to(device)
+
+
+PRE_TRAINING_optimizer = AdamW(PRE_TRAINING_model.parameters(), lr=1e-4)
+PRE_TRAINING_scheduler = get_linear_schedule_with_warmup(PRE_TRAINING_optimizer, 
+                                            num_warmup_steps=steps_per_epoch*1, 
+                                            num_training_steps=steps_per_epoch*PRE_TRAINING_NUM_EPOCHS)
+print('Pre-training starts')
+pretrain(model=PRE_TRAINING_model, training_set_iter=training_set_iter, valid_set_iter=valid_set_iter, optimizer=PRE_TRAINING_optimizer, scheduler=PRE_TRAINING_scheduler, num_epochs=PRE_TRAINING_NUM_EPOCHS)
+```
+The above code generates the output shown below  
+![Pre-Training Statistics](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/PreTrainingStats.png)  
+The graph below shows the change in Training set and Validation losses as the training of the model progresses.  
 ![Pre-Train Training and Validation set Loss Graph](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/TrainValidLossGraph.png)  
 As seen from the graph above, the validation set loss is lower than the training set loss. This occurs due to our Dropout layer. The dropout layer randomly drops a fraction of neurons during the training, which leads to a decrease in accuracy, but this makes the model more robust, as now the model would perform much better when no nodes are dropped during validation and testing. The image below contains the confusion matrix generated during the pre-training.  
 ![Pre-Train Test set Confusion Matrix](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/ConfusionMatrix.png)  
@@ -241,4 +296,14 @@ Since, Heroku only allows a total space of 500Mb to be uploaded, we could not ho
 
 ## Summarizing it all
 The project is finally complete. To summarize it, here is the encapsulated version of it all. We first created a pre-trained model of our choice, which was transferred to an exact replica, the replica was trained on a similar dataset (same dataset) in our tutorial. This model was then saved for deployment. A flask application was created which had functions to handle the post and get requests from the front-end. The flask application has a prediction.py file which loads the saved model and uses it to make predictions. Then we created a front-end using React, where the user can enter reviews through a form and get the desired output sentiment. The demonstration for the latter part was done using a simple LSTM model due to limitations in space. The final application was then hosted on Heroku server.
+
+
+
+
+## Transfer Learning
+When dealing with many classification or segmentation problems in deep learning, the available dataset might not be at par with the problem. One of the major problems is the availability of very limited datasets. There exist many solutions to deal with these problems, Transfer learning is one of them. So, the very first question is what is transfer learning? Transfer learning is a research problem in machine learning that focuses on storing the knowledge a model gains while solving a problem and then use that knowledge to solve a similar problem. For example, a model which already knows how to differentiate between the sentiment of reviews can be used to differentiate between sentiments overall with just a little buff. This buff is known are re-training the model. In other words, we first train the model on a large dataset available for a similar task as our problem, save that knowledge, use that knowledge and train the model on a part of our task’s dataset and then test its performance. Transfer learning has shown great advancements in the field of cancer subtype discovery, building utilization, general game playing, text classification and other tasks. 
+In our tutorial, we take a Pre-trained RoBERTa model, transfer that learning to the IMDb dataset, and then further transfer that learning to our IMDb dataset. Now that Transfer learning is dealt with, let us begin with the pre-training of our model. Here are some papers which discuss Transfer Learning in various Deep Learning tasks:
+- [ADVERSARIALLY ROBUST TRANSFER LEARNING](https://openreview.net/pdf?id=ryebG04YvB)
+- [A Survey on Deep Transfer Learning](https://arxiv.org/abs/1808.01974)
+- [Self-taught Learning: Transfer Learning from Unlabeled Data](https://dl.acm.org/doi/abs/10.1145/1273496.1273592)  
 
