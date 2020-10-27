@@ -1,5 +1,5 @@
 # Transfer Learning Model hosted on Heroku using React & Flask
-
+> Transfer Learning model using RoBERTa on IMDb dataset deployed on React and Flask
 ## Introduction
 Today, we are going to teach you a way to create your own text classifier which can be used to check whether the sentiment a sentence carries is positive or negative. The implementation of this deep learning model is based on RoBERTa, which is a Robustly Optimized BERT Pretraining approach. This pre-trained RoBERTa model is first pre-trained on the [IMDb dataset](#IMDb-Dataset), after which the learning was transferred to the IMDb dataset again. To make the model presentable to a user, we will be deploying it on a front-end application created using ReactJS. The contents of this tutorial are given as follows:
 1. [Pre-training](#Pre-training-Customized-RoBERTa)  
@@ -237,14 +237,25 @@ print('Pre-training starts')
 pretrain(model=PRE_TRAINING_model, training_set_iter=training_set_iter, valid_set_iter=valid_set_iter, optimizer=PRE_TRAINING_optimizer, scheduler=PRE_TRAINING_scheduler, num_epochs=PRE_TRAINING_NUM_EPOCHS)
 ```
 The above code generates the output shown below  
-![Pre-Training Statistics](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/PreTrainingStats.png)  
-The graph below shows the change in Training set and Validation losses as the training of the model progresses.  
-![Pre-Train Training and Validation set Loss Graph](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/TrainValidLossGraph.png)  
+<p align="center">
+  <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/PreTrainingStats.png" />
+</p> 
+The graph below shows the change in Training set and Validation losses as the training of the model progresses.
+<p align="center">
+  <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/TrainValidLossGraph.png" />
+</p>
 As seen from the graph above, the validation set loss is lower than the training set loss. This occurs due to our Dropout layer. The dropout layer randomly drops a fraction of neurons during the training, which leads to a decrease in accuracy, but this makes the model more robust, as now the model would perform much better when no nodes are dropped during validation and testing. The image below contains the confusion matrix generated during the pre-training.  
-![Pre-Train Test set Confusion Matrix](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/ConfusionMatrix.png)  
+<p align="center">
+  <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/ConfusionMatrix.png" />
+</p> 
+
 The respecctive F1 scores for the classes are 0.8036 and 0.8072. And the ratio of mislabel is almost balenced, hence there are no chances of the model being biased in any way.   
 
 ## Creating Classifier with Transfer Learning
+### Transfer Learning
+When dealing with many classification or segmentation problems in deep learning, the available dataset might not be at par with the problem. One of the major problems is the availability of very limited datasets. There exist many solutions to deal with these problems, Transfer learning is one of them. So, the very first question is what is transfer learning? Transfer learning is a research problem in machine learning that focuses on storing the knowledge a model gains while solving a problem and then use that knowledge to solve a similar problem. For example, a model which already knows how to differentiate between the sentiment of reviews can be used to differentiate between sentiments overall with just a little buff. This buff is known are re-training the model. In other words, we first train the model on a large dataset available for a similar task as our problem, save that knowledge, use that knowledge and train the model on a part of our task’s dataset and then test its performance. Transfer learning has shown great advancements in the field of cancer subtype discovery, building utilization, general game playing, text classification and other tasks. 
+In our tutorial, we take a Pre-trained RoBERTa model, transfer that learning to the IMDb dataset, and then further transfer that learning to IMDb dataset again with which we were able to get better result then the previous one. Now, lets us begin with the training of our classifer model.
+
 We first start with setting up the hyperparameters just like we did for the pre-training part. These hyperparameters and their values remain the same. Since the dataset remians the same in this step, the steps remain the same, with only change in variable name as follows
 ```
 CLASSIFIER_MAX_SEQ_LEN = 256
@@ -299,12 +310,19 @@ print('Training starts')
 classifier(model=CLASSIFIER_model,optimizer=CLASSIFIER_optimizer, training_set_iter=training_set_iter, valid_set_iter=valid_set_iter,  scheduler=CLASSIFIER_scheduler, num_epochs=CLASSIFIER_NUM_EPOCHS)
 ```
 So, the model runs for 20 epochs and the outcome is generated as  
-![Final Training Statistics](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/FinalTrainStats.png)  
+<p align="center">
+  <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/FinalTrainStats.png" />
+</p> 
 In the last piece of our code, we use the final model for the test set. We use the ```torch.no_grad()``` to freeze the weights again, and test the model. Once the model is trained, we can compare it with the previous model, to evaluate if the model has improved or degraded in terms of classifying quality.  
 The image below shows the trends in Training and Validation set losses.  
-![Final train Training and Validation set Loss Graph](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/TrainValidLossGraphFinalTraining.png)  
+<p align="center">
+  <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/TrainValidLossGraphFinalTraining.png" />
+</p> 
+
 As noticed earlier, the losses for validation set is still lower as compared to that of training set due to our Dropout layer. The confusion matrix below gives us a comparison for the test set.  
-![Final Train Test set Confusion Matrix](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/ConfusionMatrixFinal.png)  
+<p align="center">
+  <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/ConfusionMatrixFinal.png" />
+</p>   
 As compared from the Pre-train confusion matrix, the final classifier has an improved F1 score of 0.8108 and 0.8136, hence the misclassfication error has also reduced. Hence concluding that, transfer learning helps to increase the performance when used for similar datasets.  
 In the end we save the model using ```torch.save(model.state_dict(), "modelName.pth")``` so that it can be deployed to our web application.
 
