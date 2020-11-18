@@ -27,7 +27,7 @@ The IMDb dataset is made available at [http://ai.stanford.edu/~amaas/data/sentim
 
 ## Pre-training Customized RoBERTa
 The pre-training steps are quite simple to understand. The code given below would manipulate the data for input into the model.  
-```
+```python
 MAX_SEQ_LEN = 256
 PRE_TRAINING_TRAIN_BATCH_SIZE = 32
 PRE_TRAINING_VAL_BATCH_SIZE = 64
@@ -73,7 +73,7 @@ This concludes our discussion for the important terminologies which will be used
 
 ## Model Architecture
 The code snipped below mentions our customised RoBERTa model, encapsulated in a class.
-```
+```python
 class ROBERTA(torch.nn.Module):
     def __init__(self, dropout_rate=0.3):
         super(ROBERTA, self).__init__()
@@ -115,7 +115,7 @@ The function of all these layers is explained as follows:
 The architecture of the customized RoBERTa model that we have used is shown in the figure below.
 We now proceed to the pre-training of our customized model.
 The original implementation would look something like:
-```
+```python
 train_loss_list = []
 val_loss_list = []
 epc_list = []
@@ -177,20 +177,20 @@ def pretrain(model, optimizer, training_set_iter, valid_set_iter, scheduler, num
     print('Pre-training done!')
 ```
 Now let’s look at the code and the explanation. As you can see, we have set  
-```
+```python
 param.requires_grad = False
 ```
 in the pre-training step. This is to ensure that during the pre-training the gradients of the RoBERTa model are not changed or updated, only the layers which follow the original pre-trained model are trained as per the IMDb dataset. The criterion/ loss function is set to Cross Entropy Loss and we have set the best validation loss to infinity. The use of this best validation loss will be explained further. The train loop begins and we set the train loss and valid loss to zero each. We then use the train iterator to load the first training batch and calculate the predictions using
-```
+```python
 y_pred = model(input_ids=source, attention_mask=mask)
 ```
 Then the losses are calculated which take the predicted values and the original values related to each example in the training batch. The ```loss.backward()``` function initiates the backpropagation and the weights are updated. We have also used a ```scheduler.step()``` to keep track of our learning rate. We have used a decaying learning rate to decrease the learning rate as the training progresses, this helps in overcoming overfitting. We then store the training losses, and increase the number of global steps by 1. At the end we check if the global step is equal to our validation period, to test the model on our validation data. Before we proceed with our validation steps, we freeze the gradients of our model using
-```
+```python
 with torch.no_grad():
 ```
 As we don’t want our model to update the gradients during the validation period. We then calculate the predictions and calculate the validation loss. We then calculate this validation loss to our best validation loss, in case our validation loss comes out to be less, the model is saved and the training continues as usual. If the loss is more, the model is not saved and the training continues as usual. This makes sure that we only save those checkpoints, where the model best fits our validation dataset, helping us to curb overfitting. Once the training is complete, we set the training parameters of RoBERTa back to true. This was the explanation of the pretrain function. The next piece of code, sets the hyperparameters and calls the function to initiate the pre-training. The model is run for 12 epochs, and the model having best validation accuracy is saved. In the next section we will use this saved model to create our classifier and test its performance.  
 The model can be evaluated using the script given below. 
-```
+```python
 def evaluate(model, test_loader):
     y_pred = []
     y_true = []
@@ -222,7 +222,7 @@ def evaluate(model, test_loader):
     ax.yaxis.set_ticklabels(['negative', 'positive'])
 ```
 Now that we have the means to evaluate our model, let us initiate the pre-training. This can be done using
-```
+```python
 PRE_TRAINING_NUM_EPOCHS = 12
 steps_per_epoch = len(training_set_iter)
 
@@ -259,7 +259,7 @@ When dealing with many classification or segmentation problems in deep learning,
 In our tutorial, we take a Pre-trained RoBERTa model, transfer that learning to the IMDb dataset, and then further transfer that learning to IMDb dataset again with which we were able to get better result then the previous one. Now, lets us begin with the training of our classifer model.
 
 We first start with setting up the hyperparameters just like we did for the pre-training part. These hyperparameters and their values remain the same. Since the dataset remians the same in this step, the steps remain the same, with only change in variable name as follows
-```
+```python
 CLASSIFIER_MAX_SEQ_LEN = 256
 CLASSIFIER_TRAIN_BATCH_SIZE = 32
 CLASSIFIER_VAL_BATCH_SIZE = 64
@@ -294,7 +294,7 @@ test_set_iterC = Iterator(test, batch_size=CLASSIFIER_TEST_BATCH_SIZE, device=de
 ```
 We then create the exact same replica of our customized RoBERTa model. In the next piece of code, we create lists to store the training loss, validation loss and global steps. These shall be used to plot the trends in losses during the training period. Then we initiate the classifier, only to use the ```torch.load()``` to load the saved model instead of a random initiation. This is known as creating the transfer model. Since the architectures of both the models are same, we don’t need to make any changes to the load function. Once again, we set the best validation loss to infinity and the loss function to Cross Entropy Loss. The epochs are started similarly, and the training progresses. Also, it must be noticed that, this time we have not frozen the RoBERTa layers, and allowed them to train as well. This ensures that the model fits itself to the dataset well. The rest of the training procedure is exactly same as that of the pre-training method. We freeze the weights during the testing of validation set, and store both the training and testing losses in our lists. The model having least validation loss is saved and then can be deployed on the Web Application, which we will discuss in the further sections of our tutorial. The code for this part remains exaclty same as for that of the Pre-training hence it is not mentioned again.  
 The classifier training is initiated using  
-```
+```python
 
 CLASSIFIER_NUM_EPOCHS = 20
 steps_per_epoch = len(training_set_iter)
@@ -331,7 +331,7 @@ In the end we save the model using `torch.save(model.state_dict(), "modelName.pt
 
 ## Deploy Deep Learning Model using Flask
 Now that our classification model is ready and saved, we can deploy it using a simple Flask application. Before we start with the code, let us see what Flask is. Flask is a simple web application framework for Python, which allows the user to write applications without worrying about protocol or thread management. You can learn more about Flask from their official documentation [here](https://flask.palletsprojects.com/en/1.1.x/).  
-```
+```python
 state_dict = torch.load(cwd + '/ml_model/modelFinal.pth', map_location=torch.device('cpu'))
 model.load_state_dict(state_dict, strict=False)
 
@@ -354,11 +354,11 @@ In our Flask application, we add the saved model, and a [predict.py](https://git
 
 ## Creating a React Front-End
 We have created a very simple React front-end for our tutorial. To initiate the process, we first create an empty folder and begin with the command
-```
+```js
 npx create-react-app applicationName
 ```
 This would download the required libraries to the folder and you can initiate the basic application using
-```
+```js
 cd my-app
 npm start
 ```
