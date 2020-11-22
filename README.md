@@ -1,29 +1,58 @@
 # Transfer Learning Model hosted on Heroku using React & Flask
 > Transfer Learning model using RoBERTa on IMDb dataset deployed on React and Flask.  
 > Try out [here](https://imdbmovienew.herokuapp.com/), Run on Google Collab [here](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Notebook/roberta.ipynb)
+
+## Overview
+In this tutorial we will create a text classifier using RoBERTa model in PyTorch and deploy it using Heroku on a web application created using Flask and React JS. The topics covered in our tutorial are:
+* Creating a basic Text Classifier
+* Creating a transfer learning model using RoBERTa
+* Deploying the model on a web application 
+
+## Pre-Requisities
+To implement the complete project you will need the following:
+* Create a [GitHub account](https://github.com/join)
+* Create a [Heroku account](https://signup.heroku.com/)
+* Have knowledge of PyTorch and Deep Learning, follow the starter project [here]()
+
 ## Introduction
-Today, we are going to teach you a way to create your own text classifier which can be used to check whether the sentiment a sentence carries is positive or negative. The implementation of this deep learning model is based on RoBERTa, which is a Robustly Optimized BERT Pretraining approach. This pre-trained RoBERTa model is first pre-trained on the [IMDb dataset](#IMDb-Dataset), after which the learning was transferred to the IMDb dataset again. To make the model presentable to a user, we will be deploying it on a front-end application created using ReactJS. You should have basic knowledge of Deep Learning in pytorch. The contents of this tutorial are given as follows:
-1. [Pre-training](#Pre-training-Customized-RoBERTa)  
-    - Download the pre-trained RoBERTa model  
-    - Set up the IMDb dataset into the input format of RoBERTa  
-    - Use the IMDb dataset to pre-train the model  
-    - Save the model’s weight to use for transfer learning
-2. [Use the saved weights to implement Transfer Learning](#Creating-Classifier-with-Transfer-Learning)  
-    - Use the saved weights from Step 1 and recreate the RoBERTa model
-    - Set up the IMDb into the input format of RoBERTa
-    - Use the recreated model and train it using the IMDb dataset changing the final layer only
-    - Test the model using the reserved test set and save the results  
-3. [Deploy the model on Heroku server](#Deploy-Deep-Learning-Model-using-Flask)  
-    - Create a Flask backend
-    - Create a React front-end
-    - Synchronize the front-end and back-end
-    - Deploy the project using Heroku  
-The whole tutorial is broken down into these 3 sections to make it easier and simpler to understand. The first section is the Pre-training of our RoBERTa model. But before that we would throw some light on the dataset we have used.  
+In our tutorial we discuss how to implement [Transfer Learning](https://ruder.io/transfer-learning/index.html#applicationsoftransferlearning) using PyTorch library and then deploy the model on a web application. Before we begin let us have a look at what transfer learning is. In case you know about it, please proceed to the [next section](). In our tutorial we have assumed that you have some previous knowledge of deep learning, in case you are new, go through our [starter project]() first.
+
+### Transfer Learning
+* Focuses on using stored knowledge from previous training and using it on a similar but different dataset.
+* Extracts features from a relatively large dataset, this step is called pre-training and then uses this knowledge on the target dataset.
+* Pre-training usually done on a large dataset and then fine tuned on the target dataset.
+* Used when the target dataset is relatively small in size.
+* A real world example can be, using your knowledge of riding a bicycle to learn how to ride a motorcycle.
 
 ## Dataset
 #### IMDb Dataset
-The IMDb dataset is made available at [http://ai.stanford.edu/~amaas/data/sentiment/](http://ai.stanford.edu/~amaas/data/sentiment/), it has 25000 highly polar movie reviews for training and other 25000 for testing. The class distribution of these reviews is almost equal, i.e. the number of positive reviews is approximately equal to the number of negative reviews, hence no class biasness would occur during the pre-training of the model. We took the complete 50000 tweets of the dataset and divided them in the ratio of 8:1:1 for training, validation and testing. We have used a pre-processed version of the dataset, which can be downloaded from our repository from [here](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Dataset/IMDB_prePro.csv), you can also view the pre-processing script available [here](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Notebook/pre-processing.ipynb)  
+* Dataset can be downloaded from [http://ai.stanford.edu/~amaas/data/sentiment/](http://ai.stanford.edu/~amaas/data/sentiment/).
+* Pre-processed dataset can be downloaded from reporsitory [here](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Dataset/IMDB_prePro.csv).
+* 25000 highly polar movie reviews for training
+* 25000 movie reviews for testing
+* Classes of the dataset balanced, so no class biasness observed.
 
+## Pre-Processing
+* As discussed in the starter project, Pre-Processing is an important step for text data to make the text more understandable.
+* Complete script can be found [here](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Notebook/pre-processing.ipynb)
+* Tweet tokenizer from the NLTK Library is used as follows:
+```python
+tknzr = TweetTokenizer(reduce_len=True, preserve_case=False, strip_handles=False)
+```
+* The following function substitutes chunk of texts that follow the style as specified in the ```pattern``` variable with the one specified in ```repl``` variable.
+```python
+def re_sub(pattern, repl):
+        return re.sub(pattern, repl, text, flags=FLAGS)
+```
+* Label sentiment texts are converted to numbers using:
+```python
+encode_label = {'negative' : 0, 'positive' : 1}
+df['sentiment'] = df['sentiment'].map(encode_label)
+```
+* Final pre-processed dataframe is saved as csv file using:
+```python
+df.to_csv(FILE OUTPUT PATH)
+```
 
 ## Pre-training Customized RoBERTa
 The pre-training steps are quite simple to understand. The code given below would manipulate the data for input into the model.  
