@@ -158,7 +158,7 @@ training_set_iter = Iterator(train, batch_size=PRE_TRAINING_TRAIN_BATCH_SIZE, de
 valid_set_iter = Iterator(valid, batch_size=PRE_TRAINING_VAL_BATCH_SIZE, device=device, train=False, shuffle=False, sort=False)
 test_set_iter = Iterator(test, batch_size=PRE_TRAINING_TEST_BATCH_SIZE, device=device, train=False, shuffle=False, sort=False)
 ```
-* Once everything is set, we can start with our pre-training. But before that we need to make a few lists that would hold the training loss, validation loss, and . These will be used to observe the performance of the model in later section.
+* Once everything is set, we can start with our pre-training. But before that we need to make a few lists that would hold the training loss, validation loss, and epoch. These will be used to observe the performance of the model in later section.
 * The empty lists are defined as:
 ```python
 train_loss_list = []
@@ -167,7 +167,7 @@ epc_list = []
 ```
 * In our code, the ```pretrain((model, optimizer, training_set_iter, valid_set_iter, scheduler, num_epochs):``` function contains the pre-training steps.
 * Here we shall explain in bits what each line does.
-* For our model, we have decided not to train the RoBERTa model, to do this we need to freeze the weights. This is done using:
+* For our model, we have decided not to train the RoBERTa layers, to do this we need to freeze the weights. This is done using:
 ```python
 for param in model.roberta.parameters():
         param.requires_grad = False
@@ -188,70 +188,120 @@ best_valid_loss = float('Inf')
 * We then progress through the epochs using a for loop defined as:
 ```python
  for epoch in range(num_epochs):
- ```
- * At the beginning of each epoch, the train and validation loss are set to 0.0.
- ```python
+```
+* At the beginning of each epoch, the train and validation loss are set to 0.0.
+```python
 train_loss = 0.0
 valid_loss = 0.0
- ```
-    
-    
-    
-   
-         
-        for (review, label), _ in training_set_iter:
+```
+* For every batch, our iterators define earlier load the batch and the model is trained on that batch.
+```python
+for (review, label), _ in training_set_iter:
             mask = (review != PAD_INDEX).type(torch.uint8)
-            y_pred = model(input_ids=review, attention_mask=mask)
-            loss = criterion(y_pred, label)
-            loss.backward()
-            optimizer.step()    
-            scheduler.step()
-            optimizer.zero_grad()
-            train_loss += loss.item()
-                
-        model.eval()
-        with torch.no_grad():                    
+```
+* The predictions are made using:
+```python
+y_pred = model(input_ids=review, attention_mask=mask)
+```
+* We then calculate the losses using the criterion definer earlier in the section.
+```python
+loss = criterion(y_pred, label)
+```
+* The next steps are to update the weights, and proceed with our optimizer and learning rate scheduler.
+```python
+loss.backward()
+optimizer.step()    
+scheduler.step()
+optimizer.zero_grad()
+```
+* As the loop progresses, batches are loaded and the losses are calculated following which weights are updated.
+* Once the epoch is complete, we freeze the weights and calculate the losses for the validation set. This is done using:
+```python
+with torch.no_grad():                    
             for (review, target), _ in valid_set_iter:
                 mask = (review != PAD_INDEX).type(torch.uint8)
                 y_pred = model(input_ids=review, attention_mask=mask)
                 loss = criterion(y_pred, target)
                 valid_loss += loss.item()
-
-        train_loss = train_loss / len(training_set_iter)
+```
+* We then calculate the aggregate training and validation loss and append them to our list along with the epoch number.
+```python
+train_loss = train_loss / len(training_set_iter)
         valid_loss = valid_loss / len(valid_set_iter)
         
         train_loss_list.append(train_loss)
         val_loss_list.append(valid_loss)
         epc_list.append(epoch)
-
-        # print summary
-        print('Epoch [{}/{}], Pre-Training Loss: {:.4f}, Val Loss: {:.4f}'
+```
+* We then print the training summary of our epoch using:
+```python
+print('Epoch [{}/{}], Pre-Training Loss: {:.4f}, Val Loss: {:.4f}'
               .format(epoch+1, num_epochs, train_loss, valid_loss))
-        if best_valid_loss > valid_loss:
+```
+* As discussed above, we only save the model having lowest validation score, we compare the current validation score with our best score. In case the current validation score is lower, the model is saved using:
+```python
+if best_valid_loss > valid_loss:
             best_valid_loss = valid_loss 
             # Saving Best Pre-Trained Model as .pth file
             torch.save({'model_state_dict': model.state_dict()}, "./best_pre_train_model.pth")
-    
-    # Set bert parameters back to trainable
-    for param in model.roberta.parameters():
+```
+* Once our pre-training is complete we set the weights of RoBERTa layers to trainable again.
+```python
+for param in model.roberta.parameters():
         param.requires_grad = True
-     
-    
+```
+* The above set of codes defined our pre-training steps, now lets look at how the pre-training actually takes place.
+* We first set the number of epochs, steps per epoch, and  learning rate using:
+```python
+PRE_TRAINING_NUM_EPOCHS = 12
+steps_per_epoch = len(training_set_iter)
+
+PRE_TRAINING_model = ROBERTA(0.4)
+PRE_TRAINING_model = PRE_TRAINING_model.to(device)
+
+
+PRE_TRAINING_optimizer = AdamW(PRE_TRAINING_model.parameters(), lr=1e-4)
+PRE_TRAINING_scheduler = get_linear_schedule_with_warmup(PRE_TRAINING_optimizer, 
+                                            num_warmup_steps=steps_per_epoch*1, 
+                                            num_training_steps=steps_per_epoch*PRE_TRAINING_NUM_EPOCHS)
+```
+* We then pass on these paramters to our ```pretrain``` function for the training to begin.
+```python
+pretrain(model=PRE_TRAINING_model, training_set_iter=training_set_iter, valid_set_iter=valid_set_iter, optimizer=PRE_TRAINING_optimizer, scheduler=PRE_TRAINING_scheduler, num_epochs=PRE_TRAINING_NUM_EPOCHS)
+```
+* The training summary generated during this phase is shown below:
+<p align="center">
+  <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/PreTrainingStats.png" />
+</p>
+
+* Remember the lists that we had defined earlier, we can use them to visualize the trend of these losses in graphical format.  
+```python
+plt.figure(figsize=(10, 8))
+plt.plot(epc_list, train_loss_list, label='Train')
+plt.plot(epc_list, val_loss_list, label='Valid')
+plt.xlabel('Epochs', fontsize=14)
+plt.ylabel('Loss', fontsize=14)
+plt.legend(fontsize=14)
+plt.show()
+```
+
+* The above code generates the result shown in the image below:
+<p align="center">
+  <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/TrainValidLossGraph.png" />
+</p>
+
+* Now that we have our pre-trained model, we can use it to evaluate our test set which was created earlier. This would tell us how successful our pretraining was.
+* We freeze the weights of all layers during our evaluation
+            
+            
+            
+            
+                
         
-    print('Pre-training done!')
-```
-Now let’s look at the code and the explanation. As you can see, we have set  
-```python
-param.requires_grad = False
-```
-in the pre-training step. This is to ensure that during the pre-training the gradients of the RoBERTa model are not changed or updated, only the layers which follow the original pre-trained model are trained as per the IMDb dataset. The criterion/ loss function is set to Cross Entropy Loss and we have set the best validation loss to infinity. The use of this best validation loss will be explained further. The train loop begins and we set the train loss and valid loss to zero each. We then use the train iterator to load the first training batch and calculate the predictions using
-```python
-y_pred = model(input_ids=source, attention_mask=mask)
-```
-Then the losses are calculated which take the predicted values and the original values related to each example in the training batch. The ```loss.backward()``` function initiates the backpropagation and the weights are updated. We have also used a ```scheduler.step()``` to keep track of our learning rate. We have used a decaying learning rate to decrease the learning rate as the training progresses, this helps in overcoming overfitting. We then store the training losses, and increase the number of global steps by 1. At the end we check if the global step is equal to our validation period, to test the model on our validation data. Before we proceed with our validation steps, we freeze the gradients of our model using
-```python
-with torch.no_grad():
-```
+
+        
+
+        
 As we don’t want our model to update the gradients during the validation period. We then calculate the predictions and calculate the validation loss. We then calculate this validation loss to our best validation loss, in case our validation loss comes out to be less, the model is saved and the training continues as usual. If the loss is more, the model is not saved and the training continues as usual. This makes sure that we only save those checkpoints, where the model best fits our validation dataset, helping us to curb overfitting. Once the training is complete, we set the training parameters of RoBERTa back to true. This was the explanation of the pretrain function. The next piece of code, sets the hyperparameters and calls the function to initiate the pre-training. The model is run for 12 epochs, and the model having best validation accuracy is saved. In the next section we will use this saved model to create our classifier and test its performance.  
 The model can be evaluated using the script given below. 
 ```python
@@ -287,28 +337,14 @@ def evaluate(model, test_loader):
 ```
 Now that we have the means to evaluate our model, let us initiate the pre-training. This can be done using
 ```python
-PRE_TRAINING_NUM_EPOCHS = 12
-steps_per_epoch = len(training_set_iter)
 
-PRE_TRAINING_model = ROBERTA(0.4)
-PRE_TRAINING_model = PRE_TRAINING_model.to(device)
-
-
-PRE_TRAINING_optimizer = AdamW(PRE_TRAINING_model.parameters(), lr=1e-4)
-PRE_TRAINING_scheduler = get_linear_schedule_with_warmup(PRE_TRAINING_optimizer, 
-                                            num_warmup_steps=steps_per_epoch*1, 
-                                            num_training_steps=steps_per_epoch*PRE_TRAINING_NUM_EPOCHS)
 print('Pre-training starts')
 pretrain(model=PRE_TRAINING_model, training_set_iter=training_set_iter, valid_set_iter=valid_set_iter, optimizer=PRE_TRAINING_optimizer, scheduler=PRE_TRAINING_scheduler, num_epochs=PRE_TRAINING_NUM_EPOCHS)
 ```
 The above code generates the output shown below  
-<p align="center">
-  <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/PreTrainingStats.png" />
-</p> 
+ 
 The graph below shows the change in Training set and Validation losses as the training of the model progresses.
-<p align="center">
-  <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/TrainValidLossGraph.png" />
-</p>
+
 As seen from the graph above, the validation set loss is lower than the training set loss. This occurs due to our Dropout layer. The dropout layer randomly drops a fraction of neurons during the training, which leads to a decrease in accuracy, but this makes the model more robust, as now the model would perform much better when no nodes are dropped during validation and testing. The image below contains the confusion matrix generated during the pre-training. 
 You can checkout evaluation code in jupyter notebook roberta.ipynb posted in this GitHub repo. 
 <p align="center">
