@@ -291,26 +291,17 @@ plt.show()
 </p>
 
 * Now that we have our pre-trained model, we can use it to evaluate our test set which was created earlier. This would tell us how successful our pretraining was.
-* We freeze the weights of all layers during our evaluation
-            
-            
-            
-            
-                
-        
-
-        
-
-        
-As we don’t want our model to update the gradients during the validation period. We then calculate the predictions and calculate the validation loss. We then calculate this validation loss to our best validation loss, in case our validation loss comes out to be less, the model is saved and the training continues as usual. If the loss is more, the model is not saved and the training continues as usual. This makes sure that we only save those checkpoints, where the model best fits our validation dataset, helping us to curb overfitting. Once the training is complete, we set the training parameters of RoBERTa back to true. This was the explanation of the pretrain function. The next piece of code, sets the hyperparameters and calls the function to initiate the pre-training. The model is run for 12 epochs, and the model having best validation accuracy is saved. In the next section we will use this saved model to create our classifier and test its performance.  
-The model can be evaluated using the script given below. 
+* We freeze the weights of all layers during our evaluation. The evaluation function has two lists, one contains the predicted values and the other holds the true values.
 ```python
 def evaluate(model, test_loader):
     y_pred = []
     y_true = []
 
     model.eval()
-    with torch.no_grad():
+```
+* We then freeze the weights and use the model for predicting the test set.            
+```python
+with torch.no_grad():
         for (source, target), _ in test_loader:
                 mask = (source != PAD_INDEX).type(torch.uint8)
                 
@@ -318,7 +309,9 @@ def evaluate(model, test_loader):
 
                 y_pred.extend(torch.argmax(output, axis=-1).tolist())
                 y_true.extend(target.tolist())
-    
+```
+* Once the predictions are made, we visualize the result using [Classification Report]():
+```python
     print('Classification Report:')
     print(classification_report(y_true, y_pred, labels=[1,0], digits=4))
     
@@ -335,30 +328,20 @@ def evaluate(model, test_loader):
     ax.xaxis.set_ticklabels(['negative', 'positive'])
     ax.yaxis.set_ticklabels(['negative', 'positive'])
 ```
-Now that we have the means to evaluate our model, let us initiate the pre-training. This can be done using
-```python
-
-print('Pre-training starts')
-pretrain(model=PRE_TRAINING_model, training_set_iter=training_set_iter, valid_set_iter=valid_set_iter, optimizer=PRE_TRAINING_optimizer, scheduler=PRE_TRAINING_scheduler, num_epochs=PRE_TRAINING_NUM_EPOCHS)
-```
-The above code generates the output shown below  
- 
-The graph below shows the change in Training set and Validation losses as the training of the model progresses.
-
-As seen from the graph above, the validation set loss is lower than the training set loss. This occurs due to our Dropout layer. The dropout layer randomly drops a fraction of neurons during the training, which leads to a decrease in accuracy, but this makes the model more robust, as now the model would perform much better when no nodes are dropped during validation and testing. The image below contains the confusion matrix generated during the pre-training. 
-You can checkout evaluation code in jupyter notebook roberta.ipynb posted in this GitHub repo. 
+* The output obtained is shown in the image below:
 <p align="center">
   <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/ConfusionMatrix.png" />
 </p> 
 
-The respecctive F1 scores for the classes are 0.8036 and 0.8072. And the ratio of mislabel is almost balenced, hence there are no chances of the model being biased in any way.   
+* This concludes our discussion for the Pre-Training. We now move forward to implementing Transfer Learning.
 
-## Creating Classifier with Transfer Learning
-### Transfer Learning
-When dealing with many classification or segmentation problems in deep learning, the available dataset might not be at par with the problem. One of the major problems is the availability of very limited datasets. There exist many solutions to deal with these problems, Transfer learning is one of them. So, the very first question is what is transfer learning? Transfer learning is a research problem in machine learning that focuses on storing the knowledge a model gains while solving a problem and then use that knowledge to solve a similar problem. For example, a model which already knows how to differentiate between the sentiment of reviews can be used to differentiate between sentiments overall with just a little buff. This buff is known are re-training the model. In other words, we first train the model on a large dataset available for a similar task as our problem, save that knowledge, use that knowledge and train the model on a part of our task’s dataset and then test its performance. Transfer learning has shown great advancements in the field of cancer subtype discovery, building utilization, general game playing, text classification and other tasks. 
-In our tutorial, we take a Pre-trained RoBERTa model, transfer that learning to the IMDb dataset, and then further transfer that learning to IMDb dataset again with which we were able to get better result then the previous one. Now, lets us begin with the training of our classifer model.
+### Implementation of Transfer Learning
 
-We first start with setting up the hyperparameters just like we did for the pre-training part. These hyperparameters and their values remain the same. Since the dataset remians the same in this step, the steps remain the same, with only change in variable name as follows
+* We use a replica of the model defined earlier in the above sections.
+* The weights of the model having least validation error are loaded into our new replica model.
+* This model is then trained on the dataset, and shows an improvement in the result.
+* The final weights are saved, which can then be deployed on the web application.
+* The first step is to define the hyperparamters again.
 ```python
 CLASSIFIER_MAX_SEQ_LEN = 256
 CLASSIFIER_TRAIN_BATCH_SIZE = 32
@@ -366,6 +349,10 @@ CLASSIFIER_VAL_BATCH_SIZE = 64
 CLASSIFIER_TEST_BATCH_SIZE = 64
 PAD_INDEX = tokenizer.convert_tokens_to_ids(tokenizer.pad_token)
 UNK_INDEX = tokenizer.convert_tokens_to_ids(tokenizer.unk_token)
+```
+* The values remain the same, only the name of the variables are changed to remove any confusion.
+* We now load the dataset and create the fields, and the tabular dataset as done earlier.
+```python
 CLASSIFIER_DATASET_PATH = "./final_prepro1.csv"
 
 review_field = Field(use_vocab=False, 
@@ -387,11 +374,14 @@ train, valid, test = TabularDataset(path=CLASSIFIER_DATASET_PATH,
                                                    skip_header=False).split(split_ratio=[0.70, 0.1, 0.2], 
                                                                             stratified=True, 
                                                                             strata_field='label')
-
+```
+* Now we create our new iterators which will generate the new batches for training, validation, and testing.
+```python
 training_set_iterC = Iterator(train, batch_size=CLASSIFIER_TRAIN_BATCH_SIZE, device=device, train=True, shuffle=True, sort=False)
 valid_set_iterC = Iterator(valid, batch_size=CLASSIFIER_VAL_BATCH_SIZE, device=device, train=False, shuffle=False, sort=False)
 test_set_iterC = Iterator(test, batch_size=CLASSIFIER_TEST_BATCH_SIZE, device=device, train=False, shuffle=False, sort=False)
 ```
+* Now that our hyperparameters are set, we create the replica model and load the weights. 
 We then create the exact same replica of our customized RoBERTa model. In the next piece of code, we create lists to store the training loss, validation loss and global steps. These shall be used to plot the trends in losses during the training period. Then we initiate the classifier, only to use the ```torch.load()``` to load the saved model instead of a random initiation. This is known as creating the transfer model. Since the architectures of both the models are same, we don’t need to make any changes to the load function. Once again, we set the best validation loss to infinity and the loss function to Cross Entropy Loss. The epochs are started similarly, and the training progresses. Also, it must be noticed that, this time we have not frozen the RoBERTa layers, and allowed them to train as well. This ensures that the model fits itself to the dataset well. The rest of the training procedure is exactly same as that of the pre-training method. We freeze the weights during the testing of validation set, and store both the training and testing losses in our lists. The model having least validation loss is saved and then can be deployed on the Web Application, which we will discuss in the further sections of our tutorial. The code for this part remains exaclty same as for that of the Pre-training hence it is not mentioned again.  
 The classifier training is initiated using  
 ```python
