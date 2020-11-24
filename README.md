@@ -59,59 +59,14 @@ df['sentiment'] = df['sentiment'].map(encode_label)
 df.to_csv(FILE OUTPUT PATH)
 ```
 
-## Pre-training Customized RoBERTa
-The pre-training steps are quite simple to understand. The code given below would manipulate the data for input into the model.  
+## Implementing Transfer Learning
+
+### Model Architecture
+* Before discussing the steps of Transfer Learning, we give a brief introduction of our model.
+* We use a customized RoBERTa, which contains the RoBERTa model with some additional layers in the end.
+* The model definition contains two parts, the first contains description of layers, the second contains the order of layers.
+* The layers used are:
 ```python
-MAX_SEQ_LEN = 256
-PRE_TRAINING_TRAIN_BATCH_SIZE = 32
-PRE_TRAINING_VAL_BATCH_SIZE = 64
-PRE_TRAINING_TEST_BATCH_SIZE = 64
-PAD_INDEX = tokenizer.convert_tokens_to_ids(tokenizer.pad_token)
-UNK_INDEX = tokenizer.convert_tokens_to_ids(tokenizer.unk_token)
-PRE_TRAINING_DATASET_PATH = "./IMDB_prePro1.csv"
-
-# Define columns to read.
-review_field = Field(use_vocab=False, 
-                   tokenize=tokenizer.encode, 
-                   include_lengths=False, 
-                   batch_first=True,
-                   fix_length=MAX_SEQ_LEN, 
-                   pad_token=PAD_INDEX, 
-                   unk_token=UNK_INDEX)
-label_field = Field(sequential=False, use_vocab=False, batch_first=True)
-
-fields = {'review' : ('review', review_field), 'label' : ('label', label_field)}
-
-
-train, valid, test = TabularDataset(path=PRE_TRAINING_DATASET_PATH, 
-                                                   format='CSV', 
-                                                   fields=fields, 
-                                                   skip_header=False).split(split_ratio=[0.70, 0.1, 0.2], 
-                                                                            stratified=True, 
-                                                                            strata_field='label')
-
-training_set_iter = Iterator(train, batch_size=PRE_TRAINING_TRAIN_BATCH_SIZE, device=device, train=True, shuffle=True, sort=False)
-valid_set_iter = Iterator(valid, batch_size=PRE_TRAINING_VAL_BATCH_SIZE, device=device, train=False, shuffle=False, sort=False)
-test_set_iter = Iterator(test, batch_size=PRE_TRAINING_TEST_BATCH_SIZE, device=device, train=False, shuffle=False, sort=False)
-```
-The various terms that have been used in the code above are explained as follow:
-- **MAX_SEQ_LEN**: This hyperparameter is used to define the maximum length of a sentence which will be taken into consideration. That is, the maximum number of words from each review which will be provided to the model.
-- **PRE_TRAINING_TRAIN_BATCH_SIZE**: The number of reviews after which the model updates its weights. In simple terms, it is the number of reviews after which loss is calculated and weights are revised on the basis of loss. A smaller training batch size means that the weights are updated more frequently.
-- **PRE_TRAINING_VAL_BATCH_SIZE**: The number of reviews which will be given to the model during the validation of the model. During the validation period, the weights of the model are frozen to check its performance against a completely new dataset.
-- **PAD_INDEX**: As discussed in the MAX_SEQ_LEN, all reviews must have the same length when they are fed into the model. While the longer reviews are trimmed, the shorter ones are padded by adding 0 either at the beginning or at the end of the sentence. This task is done by PAD_INDEX.
-- **UNK_INDEX**: It might be possible that not all words present in the reviews might be available in the vocabulary files, this can be due to multi-lingual reviews, authors making typos while posting the reviews or many such reasons. The UNK_INDEX is used to handle these unknown or out-of-vocabulary words by changing all them to zero.
-- **Field**: Field is a pre-defined class model in Pytorch which is used to create a datatype that converts sentences or words to tensors. It contains the instructions like how to tokenize the sentences, maximum sentence length to be taken into consideration, type of padding, how to handle unknown vocabulary, etc. More information about field can be found at the official documentation of Pytorch [here](https://pytorch.org/text/data.html#field).
-- **TabularDataset**: TabularDataset creates a dataset in either CSV, TSV or JSON format given the path of the file and the Fields to be considered. We have used the CSV format with a 0.8, 0.1, 0.1 split for train, test and validation dataset for the IMDb dataset, and for the SST2 dataset the ratios were set to 0.7, 0.1 and 0.2. To know more about TabularDataset, try the Pytorch official documentation [here](https://pytorch.org/text/data.html#tabulardataset).
-- **Iterator**: As discussed in the PRE_TRAINING_TRAIN_BATCH_SIZE, the training dataset is divided into batches before being fed to the network. This division of batches of the training, validation or testing data is performed by the Iterator function which loads the batches from the provided dataset.
-This concludes our discussion for the important terminologies which will be used repeatedly. Now let us continue with the model.  
-
-## Model Architecture
-The code snipped below mentions our customised RoBERTa model, encapsulated in a class.
-```python
-class ROBERTA(torch.nn.Module):
-    def __init__(self, dropout_rate=0.3):
-        super(ROBERTA, self).__init__()
-        
         self.roberta = RobertaModel.from_pretrained('roberta-base')
         self.d1 = torch.nn.Dropout(dropout_rate)
         self.l1 = torch.nn.Linear(768, 256)
@@ -120,8 +75,18 @@ class ROBERTA(torch.nn.Module):
         self.bn2 = torch.nn.LayerNorm(64)
         self.d2 = torch.nn.Dropout(dropout_rate)
         self.l3 = torch.nn.Linear(64, 2)
-        
-    def forward(self, input_ids, attention_mask):
+```
+* ```self.roberta``` contains the layers of the RoBERTa model.
+* ```self.d1``` and ```self.d2``` drops out random pecentage of neurons from the incoming layers during training. The percentage for dropout is defined using ```dropout_rate```, and since the dropout is completely random the model becomes robust.
+* ```self.l1```, ```self.l2```, and ```self.l3``` are Linear layers. The input parameters for Linear layers consist of input neurons or incoming neurons and output neurons.
+* ```self.l1``` has 768 incoming neurons as RoBERTa model has output embedding of 768 units in the final layer. ```self.l1``` gives 256 output units.
+* Similarly ```self.l2``` has 256 input neurons and outputs 64 units or neurons.
+* ```self.l3``` is our final layer having 2 output neurons. These 2 output neurons decide the class of the input sentence to the model.
+* ```self.bn1``` and ```self.bn2``` are [Normalization layers](https://pytorch.org/docs/stable/generated/torch.nn.LayerNorm.html). They normalize the output of the layers and ensure that the value lies between 0 and 1.
+* Once we have our layers defined, we need to tell the model how to use them to compute the outputs. The order in which the layers occur is shown in the diagram below.
+* The above flowchart can be implemented using:
+```python
+def forward(self, input_ids, attention_mask):
         _, x = self.roberta(input_ids=input_ids, attention_mask=attention_mask)
         x = self.d1(x)
         x = self.l1(x)
@@ -134,41 +99,106 @@ class ROBERTA(torch.nn.Module):
         
         return x
 ```
-The model we have used is a RoBERTa model with some added layers. The layers added to the RoBERTa model are as follows:
-- Dropout Layer having 0.3 dropout rate
-- Linear Layer having shape (768, 256)
-- Layer Normalization
-- Linear Layer having shape (256, 64)
-- Layer Normalization
-- Dropout Layer having 0.3 dropout rate
-- Linear Layer having shape (64, 2)  
-The function of all these layers is explained as follows:
-- Dropout Layer: A dropout layer removes a fraction of the inputs at random. The fraction of inputs which are to be removed is given by the dropout rate. So, a 0.3 dropout rate means that 30% of the inputs to this layer will not be given forward, and the order of these excluded neurons is chosen at a random so that no bias occurs.
-- Linear Layer: A linear layer has two input parameters, the number of input units and the number of output units. It takes the number of input units and fits them into the multiple linear equation to give the output units. We have three additional linear layers attached to out RoBERTa model which have shapes (768, 256), (256, 64) and (64, 2) the last linear layer gives two outputs, which are taken as the probability of the input belonging to the two respective classes.
-- Layer Normalization: A normalization layer uses the mean and the variance of the inputs and normalizes the distributions of the layer, i.e. it makes sure that all the units of the layer are normalized to facilitate smoother gradients and faster training. We have used the normalization layer after the first two linear layers in our model.
-The architecture of the customized RoBERTa model that we have used is shown in the figure below.
-We now proceed to the pre-training of our customized model.
-The original implementation would look something like:
+* Now that our model is defined, we can start with the implementation.
+
+### Pre-Training
+* Pre-training involves the beginner learning phase of the model.
+* Model is usually trained on a large dataset in this step for a higher number of epochs.
+* Can be referred as the initial learning phase where weights are assigned.
+* The first step for this step is to assign the hyperparameters. This is done using:
+```python
+MAX_SEQ_LEN = 256
+```
+* MAX_SEQ_LEN defines the maximum lenght of text to be considered.
+```python
+PRE_TRAINING_TRAIN_BATCH_SIZE = 32
+```
+* PRE_TRAINING_TRAIN_BATCH_SIZE defines number of examples after which weights are updated using the loss function.
+```python
+PRE_TRAINING_VAL_BATCH_SIZE = 64
+PRE_TRAINING_TEST_BATCH_SIZE = 64
+```
+* PRE_TRAINING_VAL_BATCH_SIZE & PRE_TRAINING_TEST_BATCH_SIZE are number of examples in a batch for validation and testing, no weights are updated during this phase.
+```python
+PAD_INDEX = tokenizer.convert_tokens_to_ids(tokenizer.pad_token)
+UNK_INDEX = tokenizer.convert_tokens_to_ids(tokenizer.unk_token)
+PRE_TRAINING_DATASET_PATH = "./IMDB_prePro1.csv"
+```
+* PAD_INDEX & UNK_INDEX take care of shorter text by padding and unknown vocabulary by assigning constant index respectively.
+* PRE_TRAINING_DATASET_PATH holds the path of the pre-processed dataset, this is the only value you need to change as per the location of your dataset.
+* Now that the hyperparameters are set, we load the model using the [Field function](https://pytorch.org/text/data.html#field).
+* We define two different fields, one for text and one for label. This is done using:
+```python
+# Define columns to read.
+review_field = Field(use_vocab=False, 
+                   tokenize=tokenizer.encode, 
+                   include_lengths=False, 
+                   batch_first=True,
+                   fix_length=MAX_SEQ_LEN, 
+                   pad_token=PAD_INDEX, 
+                   unk_token=UNK_INDEX)
+label_field = Field(sequential=False, use_vocab=False, batch_first=True)
+
+fields = {'review' : ('review', review_field), 'label' : ('label', label_field)}
+```
+* Once the fields are created, we turn them into tabular dataset just like excel files, this is done using the [TabularDataset](https://pytorch.org/text/data.html#tabulardataset) function. The dataset is created using:
+```python
+train, valid, test = TabularDataset(path=PRE_TRAINING_DATASET_PATH, 
+                                                   format='CSV', 
+                                                   fields=fields, 
+                                                   skip_header=False).split(split_ratio=[0.70, 0.1, 0.2], 
+                                                                            stratified=True, 
+                                                                            strata_field='label')
+
+```
+* You can change the ratio of train, validation and test set by changing the values in ```split_ratio```.
+* We now define the iterators which load the datasets during training, validation and testing.
+```python
+training_set_iter = Iterator(train, batch_size=PRE_TRAINING_TRAIN_BATCH_SIZE, device=device, train=True, shuffle=True, sort=False)
+valid_set_iter = Iterator(valid, batch_size=PRE_TRAINING_VAL_BATCH_SIZE, device=device, train=False, shuffle=False, sort=False)
+test_set_iter = Iterator(test, batch_size=PRE_TRAINING_TEST_BATCH_SIZE, device=device, train=False, shuffle=False, sort=False)
+```
+* Once everything is set, we can start with our pre-training. But before that we need to make a few lists that would hold the training loss, validation loss, and . These will be used to observe the performance of the model in later section.
+* The empty lists are defined as:
 ```python
 train_loss_list = []
 val_loss_list = []
 epc_list = []
-
-def pretrain(model, optimizer, training_set_iter, valid_set_iter, scheduler, num_epochs):
-    
-    # Pretrain linear layers, do not train bert
-    for param in model.roberta.parameters():
+```
+* In our code, the ```pretrain((model, optimizer, training_set_iter, valid_set_iter, scheduler, num_epochs):``` function contains the pre-training steps.
+* Here we shall explain in bits what each line does.
+* For our model, we have decided not to train the RoBERTa model, to do this we need to freeze the weights. This is done using:
+```python
+for param in model.roberta.parameters():
         param.requires_grad = False
     
     model.train()
+```
+* We then define our loss function. In case you still are facing difficulties understanding these terms, please go through our [starter project]().
+* The loss function we have used is [Cross Entropy Loss](https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html).
+```python
+criterion = torch.nn.CrossEntropyLoss()
+```
+* Rather than saving the weights at every step, we only save the weights which give the least validation loss. The flowchart below explain the process.
+
+* We define the best_valid_loss as infinity in the starting to implement our criteria for saving the model with least validation loss.
+```python
+best_valid_loss = float('Inf')
+```
+* We then progress through the epochs using a for loop defined as:
+```python
+ for epoch in range(num_epochs):
+ ```
+ * At the beginning of each epoch, the train and validation loss are set to 0.0.
+ ```python
+train_loss = 0.0
+valid_loss = 0.0
+ ```
     
-    criterion = torch.nn.CrossEntropyLoss()
-    best_valid_loss = float('Inf')
     
     
-    for epoch in range(num_epochs):
-        train_loss = 0.0
-        valid_loss = 0.0 
+   
+         
         for (review, label), _ in training_set_iter:
             mask = (review != PAD_INDEX).type(torch.uint8)
             y_pred = model(input_ids=review, attention_mask=mask)
