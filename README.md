@@ -382,17 +382,103 @@ valid_set_iterC = Iterator(valid, batch_size=CLASSIFIER_VAL_BATCH_SIZE, device=d
 test_set_iterC = Iterator(test, batch_size=CLASSIFIER_TEST_BATCH_SIZE, device=device, train=False, shuffle=False, sort=False)
 ```
 * Now that our hyperparameters are set, we create the replica model and load the weights. 
-We then create the exact same replica of our customized RoBERTa model. In the next piece of code, we create lists to store the training loss, validation loss and global steps. These shall be used to plot the trends in losses during the training period. Then we initiate the classifier, only to use the ```torch.load()``` to load the saved model instead of a random initiation. This is known as creating the transfer model. Since the architectures of both the models are same, we don’t need to make any changes to the load function. Once again, we set the best validation loss to infinity and the loss function to Cross Entropy Loss. The epochs are started similarly, and the training progresses. Also, it must be noticed that, this time we have not frozen the RoBERTa layers, and allowed them to train as well. This ensures that the model fits itself to the dataset well. The rest of the training procedure is exactly same as that of the pre-training method. We freeze the weights during the testing of validation set, and store both the training and testing losses in our lists. The model having least validation loss is saved and then can be deployed on the Web Application, which we will discuss in the further sections of our tutorial. The code for this part remains exaclty same as for that of the Pre-training hence it is not mentioned again.  
-The classifier training is initiated using  
 ```python
-
-CLASSIFIER_NUM_EPOCHS = 20
-steps_per_epoch = len(training_set_iter)
-
 CLASSIFIER_model = ROBERTA()
 CLASSIFIER_model = CLASSIFIER_model.to(device)
 preTrained = torch.load("./best_pre_train_model.pth")
 CLASSIFIER_model.load_state_dict(preTrained, strict=False)
+```
+* The weights are loaded using ```torch.load()``` function, where the path to the weights is passed as the argument.
+* Once are model is ready and weights are loaded, we can begin with training the final model.
+* The ```classifier(model, optimizer, training_set_iter, valid_set_iter, scheduler, num_epochs)``` function is used to train the classifier.
+* The major steps for this function are same as the one used for pre-training, but we'll go through them once again just to be sure.
+* We first define our lists that store the training loss, validation loss and epochs.
+```python
+train_loss_list = []
+val_loss_list = []
+epc_list = []
+```
+* Once that is done, we freeze the weights of the RoBERTa layers again.
+```python
+for param in model.roberta.parameters():
+        param.requires_grad = False
+    
+model.train()
+```
+* Also remember, that these steps take place inside the classifier function.
+* We now define our loss function and set the best validation loss to infinity, just like we did in the pre-training step.
+```python
+criterion = torch.nn.CrossEntropyLoss()
+best_valid_loss = float('Inf')
+```
+* Once these steps are set up, we begin our epoch loop:
+```python
+for epoch in range(num_epochs):
+        train_loss = 0.0
+        valid_loss = 0.0
+```
+* As discussed earlier, the training and validation loss for each epoch is set to 0.0 at the beginning.
+* We then use the model to make the predictions, and calculate the loss using the real values and the predictions.
+```python
+for (review, label), _ in training_set_iter:
+            mask = (review != PAD_INDEX).type(torch.uint8)
+            
+            y_pred = model(input_ids=review, attention_mask=mask)
+            
+            loss = criterion(y_pred, label)
+```
+* Once our losses are calculated, we can update the weights, and schedule the learning rate and optimizer too,
+```python
+loss.backward()
+# Optimizer and scheduler step
+optimizer.step()    
+scheduler.step()
+optimizer.zero_grad()
+# Update train loss and global step
+train_loss += loss.item()
+```
+* Once the batches for the epoch are completed, we can use the model to test the validation set.
+```python
+model.eval()
+with torch.no_grad():                    
+ for (review, target), _ in valid_set_iter:
+  mask = (review != PAD_INDEX).type(torch.uint8)
+  y_pred = model(input_ids=review, attention_mask=mask)
+  loss = criterion(y_pred, target)
+  valid_loss += loss.item()
+```
+* We calculate the validation loss for the model, and now can proceed further to calculate the aggregate losses, print the training summary and saving the model if needed.
+```python
+train_loss = train_loss / len(training_set_iter)
+valid_loss = valid_loss / len(valid_set_iter)
+```
+* We first calculate the aggregate losses which are used to plot the graphs as above.
+```python
+model.train()
+train_loss_list.append(train_loss)
+val_loss_list.append(valid_loss)
+epc_list.append(epoch)
+# print summary
+print('Epoch [{}/{}], Pre-Training Loss: {:.4f}, Val Loss: {:.4f}'
+.format(epoch+1, num_epochs, train_loss, valid_loss))
+```
+* We append the losses to our lists, and then proceed with printing the model summary.
+```python
+if best_valid_loss > valid_loss:
+ best_valid_loss = valid_loss 
+ # Saving Pre-Trained Model as .pth file
+ torch.save({'model_state_dict': model.state_dict()}, "./final_model.pth")
+```
+* The code above saves the model if the validation loss for the epoch was lowest, in case the current validation score is lower, the model is saved.
+* We conclude the training by setting the weights of RoBERTa layers to trainable again.
+```python
+for param in model.roberta.parameters():
+ param.requires_grad = True
+```
+* Now that our training function is all set, we can train our model and implement Transfer Learning.
+```python
+CLASSIFIER_NUM_EPOCHS = 20
+steps_per_epoch = len(training_set_iter)
 
 CLASSIFIER_optimizer = AdamW(CLASSIFIER_model.parameters(), lr=1e-4)
 CLASSIFIER_scheduler = get_linear_schedule_with_warmup(CLASSIFIER_optimizer, 
@@ -401,9 +487,9 @@ CLASSIFIER_scheduler = get_linear_schedule_with_warmup(CLASSIFIER_optimizer,
 print('Training starts')
 classifier(model=CLASSIFIER_model,optimizer=CLASSIFIER_optimizer, training_set_iter=training_set_iter, valid_set_iter=valid_set_iter,  scheduler=CLASSIFIER_scheduler, num_epochs=CLASSIFIER_NUM_EPOCHS)
 ```
-So, the model runs for 20 epochs and the outcome is generated as  
+* The above code initiates the training process, and we get the final training summary as shown below.
 <p align="center">
-  <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/FinalTrainStats.png" />
+ <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/FinalTrainStats.png" />
 </p> 
 In the last piece of our code, we use the final model for the test set. We use the ```torch.no_grad()``` to freeze the weights again, and test the model. Once the model is trained, we can compare it with the previous model, to evaluate if the model has improved or degraded in terms of classifying quality.  
 The image below shows the trends in Training and Validation set losses.  
