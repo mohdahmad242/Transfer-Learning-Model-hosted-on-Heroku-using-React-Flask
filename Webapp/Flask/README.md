@@ -45,7 +45,7 @@ Final pipeline is as follows -
 
 <details> 
     <summary>Final code present here.</summary>
-    <h3 style="display:inline-block"><summary>All Code to be written in <u><i>ml_model/predict.py</i></u> model </summary></h3>
+    <h3 style="display:inline-block"><summary>All Code to be written in <u><i>ml_model/predict.py</i></u> fie. </summary></h3>
     
 ```python
     import re
@@ -185,4 +185,82 @@ Final pipeline is as follows -
     ```
     
 ## Step 4 - Final flask script.
-This final script is written `app.py` file. This file is 
+This final script is to be written in `app.py` file. This file will handel all HTTP requests we are going to use.    
+In this file we will `import pred()` function we created in pipeline section then `import Flask` to create an app instance.
+```python
+    app = Flask(__name__)
+```
+We will use this instance to handel HTTP request. First we will define a route decorator `@app.route()` then pass API end name, here we use **`/predict`**.
+Since, we will be receiving our text data on this rout, here will we pass method as `POST`.  
+Learn about basics of newtorking if you don't know [Learn Here](https://www.toolsqa.com/rest-assured/rest-routes/)
+```python
+    @app.route('/predict', methods=['POST'])
+```
+Now, we will define a fuction which will be executed when someone make POST request on `/predict` route. In this function we will take our POST route data and pass to the `pred()` function we imported from **`ml_model/predict.py`** file.
+```python
+    def home():
+        review = request.json['review']
+        prediction = pred(review)
+        print(prediction)
+        return prediction
+```
+<details> 
+    <summary>Final code for <b>app.py</b> file is present here.</summary>
+    <h3 style="display:inline-block"><summary>All this code to be written in <u><i>app.py</i></u> fie. </summary></h3>
+    
+```python
+    from ml_model.predict import pred
+
+    import os
+    from flask import Flask, render_template, request, make_response, jsonify, send_file
+
+    app = Flask(__name__)
+
+    # Set up the main route
+    @app.route('/predict', methods=['POST'])
+    def home():
+        print("Action Initiated")
+        review = request.json['review']
+        prediction = pred(review)
+        print(prediction)
+        return prediction
+
+    if __name__ == '__main__':
+        app.run()
+
+```
+    
+</details>
+
+## Step 4 - Testing final app.
+To run the Flask open terminal in the project directory and type following command in terminal.
+```bash
+    flask run
+```
+Now, to test your final API you can use any API Client (Postman, Insomnia, etc).  
+We are using `Postman`, you can learn about it here - https://www.postman.com/
+
+# Diployment on Heroku.
+We expect you have GitHub account and you know how to create repository. If not, [learn here](https://guides.github.com/activities/hello-world/)
+* Create a file naming **`Procfile`** in main directory. 
+    This file specify which command to run at app startup, for our app write this command
+    ```bash
+    web: gunicorn --bind 0.0.0.0:$PORT main_app:app
+    ```
+> **IMPOERTANT** In your requrement.txt file remove torch and put these and same for touchvision   
+    > https://download.pytorch.org/whl/cpu/torch-1.6.0%2Bcpu-cp37-cp37m-linux_x86_64.whl  
+    > https://download.pytorch.org/whl/cpu/torchvision-0.7.0%2Bcpu-cp37-cp37m-linux_x86_64.whl
+    <details> 
+    <summary>Explanation with Screenshot</summary>
+    `requirements.txt` file is used by the heroku server to download all packages. If we specify `torch == 1.6.0`, then it will download whole pytorch library. 
+    Since we are using free version of heroku, we have only `CPU` support not `GPU`. Pytorch library comes with all files required for GPU support, so we need to download only 
+    `CPU` specific files. As Heroku only provide `500 Mb` storage in free version and complete Pytorch library is more than 600 Mb, that why we need only CPU version which far     less space.
+    </details>
+* Now create a repository and push all code on github repo.
+* Create Heroku account https://signup.heroku.com/
+* Link you github account with heroku.
+* Choose the github repository where you push all your code.
+* Deploy. 
+    
+    
+
