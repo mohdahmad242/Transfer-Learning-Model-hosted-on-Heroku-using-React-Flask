@@ -58,9 +58,57 @@ df['sentiment'] = df['sentiment'].map(encode_label)
 ```python
 df.to_csv(FILE OUTPUT PATH)
 ```
+* The complete code for this available as a notebook in our repository as mentioned above. You can also view the code below:
+<details>
+ <summary> View Code </summary>
+ 
+ ```python
+ import pandas as pd
+import nltk
+from nltk.corpus import stopwords
+import re
+from wordsegment import segment, load
+from nltk.tokenize import TweetTokenizer
+
+STOPWORDS = set(stopwords.words('english'))
+tknzr = TweetTokenizer(reduce_len=True, preserve_case=False, strip_handles=False)
+def text_preprocess(text):
+    text = str(text)
+    FLAGS = re.MULTILINE | re.DOTALL
+    eyes = r"[8:=;]"
+    nose = r"['`\-]?"
+
+    def re_sub(pattern, repl):
+        return re.sub(pattern, repl, text, flags=FLAGS)
+    text = re_sub(r"https?:\/\/\S+\b|www\.(\w+\.)+\S*", "<url>")
+    text = re_sub(r"/"," / ")
+    text = re_sub(r"@\w+", "<user>")
+    text = re_sub(r"{}{}[)dD]+|[)dD]+{}{}".format(eyes, nose, nose, eyes), "<smile>")
+    text = re_sub(r"{}{}p+".format(eyes, nose), "<lolface>")
+    text = re_sub(r"{}{}\(+|\)+{}{}".format(eyes, nose, nose, eyes), "<sadface>")
+    text = re_sub(r"{}{}[\/|l*]".format(eyes, nose), "<neutralface>")
+    text = re_sub(r"<3","<heart>")
+    text = re_sub(r"[-+]?[.\d]*[\d]+[:,.\d]*", "<number>")
+    text = re_sub(r"([!?.]){2,}", r"\1 <repeat>")
+    text = re_sub(r"\b(\S*?)(.)\2{2,}\b", r"\1\2 <elong>")
+    text = " ".join([word for word in str(text).split() if word not in STOPWORDS])
+
+    tokens = tknzr.tokenize(text.lower())
+    return " ".join(tokens)
+#replace INPUT PATH with the path of your file
+df = pd.read_csv("INPUT PATH")
+# Encoding negative to 0 and positive to 1
+encode_label = {'negative' : 0, 'positive' : 1}
+df['sentiment'] = df['sentiment'].map(encode_label)
+df['review'] = df['review'].apply(text_preprocess)
+#replace FILE PATH with your own
+df.to_csv("FILE PATH")
+ ```
+</details>
+
 
 ## Implementing Transfer Learning
-
+The complete implementation of this section can be found on our Repository [here](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Notebook/roberta.ipynb)
 ### Model Architecture
 * Before discussing the steps of Transfer Learning, we give a brief introduction of our model.
 * We use a customized RoBERTa, which contains the RoBERTa model with some additional layers in the end.
@@ -99,6 +147,40 @@ def forward(self, input_ids, attention_mask):
         
         return x
 ```
+* The complete model would look something like the code below.
+<details>
+ <summary>View Code</summary>
+ 
+ ```python
+ class ROBERTA(torch.nn.Module):
+    def __init__(self, dropout_rate=0.3):
+        super(ROBERTA, self).__init__()
+        
+        self.roberta = RobertaModel.from_pretrained('roberta-base')
+        self.d1 = torch.nn.Dropout(dropout_rate)
+        self.l1 = torch.nn.Linear(768, 256)
+        self.bn1 = torch.nn.LayerNorm(256)
+        self.l2 = torch.nn.Linear(256, 64)
+        self.bn2 = torch.nn.LayerNorm(64)
+        self.d2 = torch.nn.Dropout(dropout_rate)
+        self.l3 = torch.nn.Linear(64, 2)
+        
+    def forward(self, input_ids, attention_mask):
+        _, x = self.roberta(input_ids=input_ids, attention_mask=attention_mask)
+        x = self.d1(x)
+        x = self.l1(x)
+        x = self.bn1(x)
+        x = self.l2(x)
+        x = self.bn2(x)
+        x = torch.nn.Tanh()(x)
+        x = self.d2(x)
+        x = self.l3(x)
+        
+        return x
+ ```
+</details>
+
+
 * Now that our model is defined, we can start with the implementation.
 
 ### Pre-Training
@@ -158,6 +240,46 @@ training_set_iter = Iterator(train, batch_size=PRE_TRAINING_TRAIN_BATCH_SIZE, de
 valid_set_iter = Iterator(valid, batch_size=PRE_TRAINING_VAL_BATCH_SIZE, device=device, train=False, shuffle=False, sort=False)
 test_set_iter = Iterator(test, batch_size=PRE_TRAINING_TEST_BATCH_SIZE, device=device, train=False, shuffle=False, sort=False)
 ```
+* The complete data preparation section would look like this:
+<details>
+ <summary>View Code</summary>
+
+```python
+MAX_SEQ_LEN = 256
+PRE_TRAINING_TRAIN_BATCH_SIZE = 32
+PRE_TRAINING_VAL_BATCH_SIZE = 64
+PRE_TRAINING_TEST_BATCH_SIZE = 64
+PAD_INDEX = tokenizer.convert_tokens_to_ids(tokenizer.pad_token)
+UNK_INDEX = tokenizer.convert_tokens_to_ids(tokenizer.unk_token)
+PRE_TRAINING_DATASET_PATH = "./IMDB_prePro1.csv"
+
+# Define columns to read.
+review_field = Field(use_vocab=False, 
+                   tokenize=tokenizer.encode, 
+                   include_lengths=False, 
+                   batch_first=True,
+                   fix_length=MAX_SEQ_LEN, 
+                   pad_token=PAD_INDEX, 
+                   unk_token=UNK_INDEX)
+label_field = Field(sequential=False, use_vocab=False, batch_first=True)
+
+fields = {'review' : ('review', review_field), 'label' : ('label', label_field)}
+
+
+train, valid, test = TabularDataset(path=PRE_TRAINING_DATASET_PATH, 
+                                                   format='CSV', 
+                                                   fields=fields, 
+                                                   skip_header=False).split(split_ratio=[0.70, 0.1, 0.2], 
+                                                                            stratified=True, 
+                                                                            strata_field='label')
+
+training_set_iter = Iterator(train, batch_size=PRE_TRAINING_TRAIN_BATCH_SIZE, device=device, train=True, shuffle=True, sort=False)
+valid_set_iter = Iterator(valid, batch_size=PRE_TRAINING_VAL_BATCH_SIZE, device=device, train=False, shuffle=False, sort=False)
+test_set_iter = Iterator(test, batch_size=PRE_TRAINING_TEST_BATCH_SIZE, device=device, train=False, shuffle=False, sort=False)
+```
+</details>
+
+
 * Once everything is set, we can start with our pre-training. But before that we need to make a few lists that would hold the training loss, validation loss, and epoch. These will be used to observe the performance of the model in later section.
 * The empty lists are defined as:
 ```python
@@ -250,6 +372,76 @@ if best_valid_loss > valid_loss:
 for param in model.roberta.parameters():
         param.requires_grad = True
 ```
+
+* Once completed, the pre-training block would look like:
+
+<details>
+ <summary>View Code</summary>
+
+```python
+train_loss_list = []
+val_loss_list = []
+epc_list = []
+
+def pretrain(model, optimizer, training_set_iter, valid_set_iter, scheduler, num_epochs):
+    
+    # Pretrain linear layers, do not train bert
+    for param in model.roberta.parameters():
+        param.requires_grad = False
+    
+    model.train()
+    
+    criterion = torch.nn.CrossEntropyLoss()
+    best_valid_loss = float('Inf')
+    
+    
+    for epoch in range(num_epochs):
+        train_loss = 0.0
+        valid_loss = 0.0 
+        for (review, label), _ in training_set_iter:
+            mask = (review != PAD_INDEX).type(torch.uint8)
+            y_pred = model(input_ids=review, attention_mask=mask)
+            loss = criterion(y_pred, label)
+            loss.backward()
+            optimizer.step()    
+            scheduler.step()
+            optimizer.zero_grad()
+            train_loss += loss.item()
+                
+        model.eval()
+        with torch.no_grad():                    
+            for (review, target), _ in valid_set_iter:
+                mask = (review != PAD_INDEX).type(torch.uint8)
+                y_pred = model(input_ids=review, attention_mask=mask)
+                loss = criterion(y_pred, target)
+                valid_loss += loss.item()
+
+        train_loss = train_loss / len(training_set_iter)
+        valid_loss = valid_loss / len(valid_set_iter)
+        
+        train_loss_list.append(train_loss)
+        val_loss_list.append(valid_loss)
+        epc_list.append(epoch)
+
+        # print summary
+        print('Epoch [{}/{}], Pre-Training Loss: {:.4f}, Val Loss: {:.4f}'
+              .format(epoch+1, num_epochs, train_loss, valid_loss))
+        if best_valid_loss > valid_loss:
+            best_valid_loss = valid_loss 
+            # Saving Best Pre-Trained Model as .pth file
+            torch.save({'model_state_dict': model.state_dict()}, "./best_pre_train_model.pth")
+    
+    # Set bert parameters back to trainable
+    for param in model.roberta.parameters():
+        param.requires_grad = True
+     
+    
+        
+    print('Pre-training done!')
+```
+</details>
+
+
 * The above set of codes defined our pre-training steps, now lets look at how the pre-training actually takes place.
 * We first set the number of epochs, steps per epoch, and  learning rate using:
 ```python
@@ -269,6 +461,28 @@ PRE_TRAINING_scheduler = get_linear_schedule_with_warmup(PRE_TRAINING_optimizer,
 ```python
 pretrain(model=PRE_TRAINING_model, training_set_iter=training_set_iter, valid_set_iter=valid_set_iter, optimizer=PRE_TRAINING_optimizer, scheduler=PRE_TRAINING_scheduler, num_epochs=PRE_TRAINING_NUM_EPOCHS)
 ```
+* The complete code for this section is given below:
+<details>
+ <summary>View Code</summary>
+
+```python
+PRE_TRAINING_NUM_EPOCHS = 12
+steps_per_epoch = len(training_set_iter)
+
+PRE_TRAINING_model = ROBERTA(0.4)
+PRE_TRAINING_model = PRE_TRAINING_model.to(device)
+
+
+PRE_TRAINING_optimizer = AdamW(PRE_TRAINING_model.parameters(), lr=1e-4)
+PRE_TRAINING_scheduler = get_linear_schedule_with_warmup(PRE_TRAINING_optimizer, 
+                                            num_warmup_steps=steps_per_epoch*1, 
+                                            num_training_steps=steps_per_epoch*PRE_TRAINING_NUM_EPOCHS)
+print('Pre-training starts')
+pretrain(model=PRE_TRAINING_model, training_set_iter=training_set_iter, valid_set_iter=valid_set_iter, optimizer=PRE_TRAINING_optimizer, scheduler=PRE_TRAINING_scheduler, num_epochs=PRE_TRAINING_NUM_EPOCHS)
+```
+</details>
+
+
 * The training summary generated during this phase is shown below:
 <p align="center">
   <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/PreTrainingStats.png" />
@@ -328,6 +542,44 @@ with torch.no_grad():
     ax.xaxis.set_ticklabels(['negative', 'positive'])
     ax.yaxis.set_ticklabels(['negative', 'positive'])
 ```
+* The complete evaluation function would look like:
+
+<details><summary>View Code</summary>
+
+```python
+def evaluate(model, test_loader):
+    y_pred = []
+    y_true = []
+
+    model.eval()
+    with torch.no_grad():
+        for (source, target), _ in test_loader:
+                mask = (source != PAD_INDEX).type(torch.uint8)
+                
+                output = model(source, attention_mask=mask)
+
+                y_pred.extend(torch.argmax(output, axis=-1).tolist())
+                y_true.extend(target.tolist())
+    
+    print('Classification Report:')
+    print(classification_report(y_true, y_pred, labels=[1,0], digits=4))
+    
+    cm = confusion_matrix(y_true, y_pred, labels=[1,0])
+    ax = plt.subplot()
+
+    sns.heatmap(cm, annot=True, ax = ax, cmap='Blues', fmt="d")
+
+    ax.set_title('Confusion Matrix')
+
+    ax.set_xlabel('Predicted Labels')
+    ax.set_ylabel('True Labels')
+
+    ax.xaxis.set_ticklabels(['negative', 'positive'])
+    ax.yaxis.set_ticklabels(['negative', 'positive'])
+```
+
+</details>
+
 * The output obtained is shown in the image below:
 <p align="center">
   <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/ConfusionMatrix.png" />
@@ -381,6 +633,46 @@ training_set_iterC = Iterator(train, batch_size=CLASSIFIER_TRAIN_BATCH_SIZE, dev
 valid_set_iterC = Iterator(valid, batch_size=CLASSIFIER_VAL_BATCH_SIZE, device=device, train=False, shuffle=False, sort=False)
 test_set_iterC = Iterator(test, batch_size=CLASSIFIER_TEST_BATCH_SIZE, device=device, train=False, shuffle=False, sort=False)
 ```
+* The complete code for this section would look like:
+<details>
+ <summary>View Code</summary>
+
+```python
+CLASSIFIER_MAX_SEQ_LEN = 256
+CLASSIFIER_TRAIN_BATCH_SIZE = 32
+CLASSIFIER_VAL_BATCH_SIZE = 64
+CLASSIFIER_TEST_BATCH_SIZE = 64
+PAD_INDEX = tokenizer.convert_tokens_to_ids(tokenizer.pad_token)
+UNK_INDEX = tokenizer.convert_tokens_to_ids(tokenizer.unk_token)
+CLASSIFIER_DATASET_PATH = "./final_prepro1.csv"
+
+review_field = Field(use_vocab=False, 
+                   tokenize=tokenizer.encode, 
+                   include_lengths=False, 
+                   batch_first=True,
+                   fix_length=CLASSIFIER_MAX_SEQ_LEN, 
+                   pad_token=PAD_INDEX, 
+                   unk_token=UNK_INDEX)
+
+label_field = Field(sequential=False, use_vocab=False, batch_first=True)
+
+fields = {'review' : ('review', review_field), 'label' : ('label', label_field)}
+
+
+train, valid, test = TabularDataset(path=CLASSIFIER_DATASET_PATH, 
+                                                   format='CSV', 
+                                                   fields=fields, 
+                                                   skip_header=False).split(split_ratio=[0.70, 0.1, 0.2], 
+                                                                            stratified=True, 
+                                                                            strata_field='label')
+
+training_set_iterC = Iterator(train, batch_size=CLASSIFIER_TRAIN_BATCH_SIZE, device=device, train=True, shuffle=True, sort=False)
+valid_set_iterC = Iterator(valid, batch_size=CLASSIFIER_VAL_BATCH_SIZE, device=device, train=False, shuffle=False, sort=False)
+test_set_iterC = Iterator(test, batch_size=CLASSIFIER_TEST_BATCH_SIZE, device=device, train=False, shuffle=False, sort=False)
+```
+</details>
+
+
 * Now that our hyperparameters are set, we create the replica model and load the weights. 
 ```python
 CLASSIFIER_model = ROBERTA()
@@ -475,6 +767,88 @@ if best_valid_loss > valid_loss:
 for param in model.roberta.parameters():
  param.requires_grad = True
 ```
+* The complete implementation looks something like:
+<details><summary>View Code</summary>
+
+```python
+train_loss_list = []
+val_loss_list = []
+epc_list = []
+
+def classifier(model, optimizer, training_set_iter, valid_set_iter, scheduler, num_epochs):
+    
+    # Pretrain linear layers, do not train bert
+    for param in model.roberta.parameters():
+        param.requires_grad = False
+    
+    model.train()
+    
+    # Initialize losses and loss histories
+    
+    criterion = torch.nn.CrossEntropyLoss()
+    best_valid_loss = float('Inf')
+    # Train loop
+    for epoch in range(num_epochs):
+        train_loss = 0.0
+        valid_loss = 0.0 
+        for (review, label), _ in training_set_iter:
+            mask = (review != PAD_INDEX).type(torch.uint8)
+            
+            y_pred = model(input_ids=review, attention_mask=mask)
+            
+            loss = criterion(y_pred, label)
+   
+            loss.backward()
+            
+            # Optimizer and scheduler step
+            optimizer.step()    
+            scheduler.step()
+                
+            optimizer.zero_grad()
+            
+            # Update train loss and global step
+            train_loss += loss.item()
+                
+        model.eval()
+        
+        with torch.no_grad():                    
+            for (review, target), _ in valid_set_iter:
+                mask = (review != PAD_INDEX).type(torch.uint8)
+                
+                y_pred = model(input_ids=review, attention_mask=mask)
+                
+                loss = criterion(y_pred, target)
+                
+                valid_loss += loss.item()
+
+        # Store train and validation loss history
+        train_loss = train_loss / len(training_set_iter)
+        valid_loss = valid_loss / len(valid_set_iter)
+        
+        model.train()
+        train_loss_list.append(train_loss)
+        val_loss_list.append(valid_loss)
+        epc_list.append(epoch)
+        # print summary
+        print('Epoch [{}/{}], Pre-Training Loss: {:.4f}, Val Loss: {:.4f}'
+              .format(epoch+1, num_epochs, train_loss, valid_loss))
+        if best_valid_loss > valid_loss:
+            best_valid_loss = valid_loss 
+            # Saving Pre-Trained Model as .pth file
+            torch.save({'model_state_dict': model.state_dict()}, "./final_model.pth")
+    
+    # Set bert parameters back to trainable
+    for param in model.roberta.parameters():
+        param.requires_grad = True
+     
+    
+        
+    print('Training done!')
+```
+
+</details>
+
+
 * Now that our training function is all set, we can train our model and implement Transfer Learning.
 ```python
 CLASSIFIER_NUM_EPOCHS = 20
@@ -487,7 +861,30 @@ CLASSIFIER_scheduler = get_linear_schedule_with_warmup(CLASSIFIER_optimizer,
 print('Training starts')
 classifier(model=CLASSIFIER_model,optimizer=CLASSIFIER_optimizer, training_set_iter=training_set_iter, valid_set_iter=valid_set_iter,  scheduler=CLASSIFIER_scheduler, num_epochs=CLASSIFIER_NUM_EPOCHS)
 ```
-* The above code initiates the training process, and we get the final training summary as shown below.
+
+* The implementation of this section can be done as:
+<details><summary>View Code</summary>
+
+```python
+CLASSIFIER_NUM_EPOCHS = 20
+steps_per_epoch = len(training_set_iter)
+
+CLASSIFIER_model = ROBERTA()
+CLASSIFIER_model = CLASSIFIER_model.to(device)
+preTrained = torch.load("./best_pre_train_model.pth")
+CLASSIFIER_model.load_state_dict(preTrained, strict=False)
+
+CLASSIFIER_optimizer = AdamW(CLASSIFIER_model.parameters(), lr=1e-4)
+CLASSIFIER_scheduler = get_linear_schedule_with_warmup(CLASSIFIER_optimizer, 
+                                            num_warmup_steps=steps_per_epoch*1, 
+                                            num_training_steps=steps_per_epoch*CLASSIFIER_NUM_EPOCHS)
+print('Training starts')
+classifier(model=CLASSIFIER_model,optimizer=CLASSIFIER_optimizer, training_set_iter=training_set_iter, valid_set_iter=valid_set_iter,  scheduler=CLASSIFIER_scheduler, num_epochs=CLASSIFIER_NUM_EPOCHS)
+```
+</details>
+
+
+* The above code initiates the training process, and we get the final training summary as shown below. Notice that we have loaded our model in this section.
 <p align="center">
  <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/FinalTrainStats.png" />
 </p> 
