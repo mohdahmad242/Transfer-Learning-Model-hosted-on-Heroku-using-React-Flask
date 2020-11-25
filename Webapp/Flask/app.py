@@ -3,9 +3,7 @@ from ml_model.predict import pred
 import os
 from flask import Flask, render_template, request, make_response, jsonify, send_file
 
-
-app = Flask(__name__, template_folder='templates')
-
+app = Flask(__name__)
 
 # Set up the main route
 @app.route('/predict', methods=['POST'])

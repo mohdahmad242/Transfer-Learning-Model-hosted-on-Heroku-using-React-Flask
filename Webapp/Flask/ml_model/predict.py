@@ -16,7 +16,26 @@ b =  pickle.load(open(cwd + '\\ml_model\\vocab.pickle','rb'))
 
 vocab = b['vocab']
 
+def text_preprocess(text):
+    text = str(text)
+    FLAGS = re.MULTILINE | re.DOTALL
+    eyes = r"[8:=;]"
+    nose = r"['`\-]?"
 
+    def re_sub(pattern, repl):
+        return re.sub(pattern, repl, text, flags=FLAGS)
+    text = re_sub(r"https?:\/\/\S+\b|www\.(\w+\.)+\S*", "<url>")
+    text = re_sub(r"/"," / ")
+    text = re_sub(r"@\w+", "<user>")
+    text = re_sub(r"{}{}[)dD]+|[)dD]+{}{}".format(eyes, nose, nose, eyes), "<smile>")
+    text = re_sub(r"{}{}p+".format(eyes, nose), "<lolface>")
+    text = re_sub(r"{}{}\(+|\)+{}{}".format(eyes, nose, nose, eyes), "<sadface>")
+    text = re_sub(r"{}{}[\/|l*]".format(eyes, nose), "<neutralface>")
+    text = re_sub(r"<3","<heart>")
+    text = re_sub(r"[-+]?[.\d]*[\d]+[:,.\d]*", "<number>")
+    text = re_sub(r"([!?.]){2,}", r"\1 <repeat>")
+    text = re_sub(r"\b(\S*?)(.)\2{2,}\b", r"\1\2 <elong>")
+    return text
 
 class ROBERTA(torch.nn.Module):
     def __init__(self, dropout_rate=0.3):
@@ -41,14 +60,13 @@ class ROBERTA(torch.nn.Module):
 
 model = ROBERTA()
 
-#moving to gpu
-
 state_dict = torch.load(cwd + '\\ml_model\\final_model.pth', map_location=torch.device('cpu'))
 model.load_state_dict(state_dict, strict=False)
 
 
 def pred(text):
     print("Text Received =>", text)
+    text = text_preprocess(text)
     word_seq = np.array([vocab[word] for word in text.split() 
                       if word in vocab.keys()])
     word_seq = np.expand_dims(word_seq,axis=0)
