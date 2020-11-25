@@ -9,7 +9,7 @@ gunicorn==20.0.4
 matplotlib==3.1.1
 mlxtend==0.17.2
 nltk==3.4.5
-notebook==6.0.1
+notebook>=6.1.5
 numpy==1.16.5
 numpydoc==0.9.1
 pandas==0.25.1
