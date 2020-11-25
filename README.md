@@ -491,18 +491,72 @@ classifier(model=CLASSIFIER_model,optimizer=CLASSIFIER_optimizer, training_set_i
 <p align="center">
  <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/FinalTrainStats.png" />
 </p> 
-In the last piece of our code, we use the final model for the test set. We use the ```torch.no_grad()``` to freeze the weights again, and test the model. Once the model is trained, we can compare it with the previous model, to evaluate if the model has improved or degraded in terms of classifying quality.  
-The image below shows the trends in Training and Validation set losses.  
+
+* Just like in the previous section, we can use our lists to plot the graph of training and validation losses for the epochs, this can be done using: 
+```python
+plt.figure(figsize=(10, 8))
+plt.plot(epc_list, train_loss_list, label='Train')
+plt.plot(epc_list, val_loss_list, label='Valid')
+plt.xlabel('Epochs', fontsize=14)
+plt.ylabel('Loss', fontsize=14)
+plt.legend(fontsize=14)
+plt.show()
+```
+* We get the following image as the plot for the trend of the losses:
 <p align="center">
   <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/TrainValidLossGraphFinalTraining.png" />
-</p> 
+</p>
 
-As noticed earlier, the losses for validation set is still lower as compared to that of training set due to our Dropout layer. The confusion matrix below gives us a comparison for the test set.  
+* Now that we have implemented Transfer Learning, it is time to evaluate the model and check if there were any improvements to the previous scores.
+* For that we use the evaluation function again as earlier, the code for the evaluation function is mentioned again for your help:
+```python
+def evaluate(model, test_loader):
+    y_pred = []
+    y_true = []
+
+    model.eval()
+    with torch.no_grad():
+        for (source, target), _ in test_loader:
+                mask = (source != PAD_INDEX).type(torch.uint8)
+                
+                output = model(source, attention_mask=mask)
+
+                y_pred.extend(torch.argmax(output, axis=-1).tolist())
+                y_true.extend(target.tolist())
+    
+    print('Classification Report:')
+    print(classification_report(y_true, y_pred, labels=[1,0], digits=4))
+    
+    cm = confusion_matrix(y_true, y_pred, labels=[1,0])
+    ax = plt.subplot()
+
+    sns.heatmap(cm, annot=True, ax = ax, cmap='Blues', fmt="d")
+
+    ax.set_title('Confusion Matrix')
+
+    ax.set_xlabel('Predicted Labels')
+    ax.set_ylabel('True Labels')
+
+    ax.xaxis.set_ticklabels(['negative', 'positive'])
+    ax.yaxis.set_ticklabels(['negative', 'positive'])
+```
+* The only thing left is to evaluate the final model, we do that using the following piece of code:
+```python
+evaluate(CLASSIFIER_model, test_set_iter)
+```
+* Remember to change the argument ```CLASSIFIER_model``` with the name of your own classifier, in case you follow our tutorial completely, there is no need for any change.
+* The evaluation function return the following result:
 <p align="center">
   <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/ConfusionMatrixFinal.png" />
-</p>   
-As compared from the Pre-train confusion matrix, the final classifier has an improved F1 score of 0.8108 and 0.8136, hence the misclassfication error has also reduced. Hence concluding that, transfer learning helps to increase the performance when used for similar datasets.  
-In the end we save the model using `torch.save(model.state_dict(), "modelName.pth")` so that it can be deployed to our web application.
+</p>
+
+* Also, our final model is saved, which we will use for deployment on the web application.
+
+### Conclusions
+ Upon comparing the results we can draw the following conclusions:
+ * There is an improvement in f1-score for both the classes.
+ * The accuracy in case of our final model is higher than the one trained before.
+The above results prove that Transfer Learning shows an improvement in the results of training.
 
 
 ## Deploy Deep Learning Model using Flask
