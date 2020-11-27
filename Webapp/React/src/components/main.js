@@ -2,11 +2,6 @@ import React, { Component } from "react";
 import PREDICTION from "./prediction";
 import EXAMPLE from "./example";
 
-import {
-    Jumbotron,
-    Container
-  } from "react-bootstrap";
-
 class Main extends Component {
 
   render() {
