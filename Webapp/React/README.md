@@ -1,14 +1,14 @@
 # Introduction
 In this tutorial we will build a simple React App which use the API we developed in [Flask tutorial](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Webapp/Flask/README.md).
 ## What is React?
-React is javascript framework developed by Facebook developers. React is a declarative, efficient, and flexible JavaScript library for building user interfaces. It lets you compose complex UIs from small and isolated pieces of code called “components”.[ref](https://reactjs.org/tutorial/tutorial.html) It uses virtual DOM (JavaScript object), which improves the performance of the app. The JavaScript virtual DOM is faster than the regular DOM. Its modeular we can write code for individual component and manage it saparetly. We can use ReactJS on the client and server-side as well as with other frameworks.
+React is javascript framework developed by Facebook developers. React is a declarative, efficient, and flexible JavaScript library for building user interfaces. It lets you compose complex UIs from small and isolated pieces of code called “components”[[ref]](https://reactjs.org/tutorial/tutorial.html). It uses virtual DOM (JavaScript object), which improves the performance of the app. The JavaScript virtual DOM is faster than the regular DOM. Its modeular we can write code for individual component and manage it saparetly. We can use ReactJS on the client and server-side as well as with other frameworks.
 
 ## Pre-Requisities
 We assume you are familiar with these concepts - 
-* HTML
-* CSS
-* JavaScript
-
+* HTML  [Learn here](https://www.w3schools.com/html/)
+* CSS  [Learn here](https://www.w3schools.com/css/)
+* JavaScript  [Learn here](https://www.w3schools.com/js/DEFAULT.asp)
+ 
 
 ### Getting started 
 * Before we start writing we need to setup development environment for this you need to have `node>=8.10` and `npm>=6.5` installed. 
@@ -19,6 +19,13 @@ To create new project witre following code in terminal of a directory of your ch
 * To run this initial project `cd` in to `react-app` directory and hit `npm start`.
 * Now we need to download some packages we will use in our project.
 ```bash
+  npm install react-router-dom
+  npm install react-bootstrap
+  npm install axios
+  npm install http-proxy-middleware
+  
+      OR
+  
   npm install axios http-proxy-middleware react-router-dom react-bootstrap
 ```
 > We will understand each package we install later in this tutorial.
