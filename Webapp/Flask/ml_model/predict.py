@@ -62,7 +62,7 @@ model = ROBERTA()
 
 state_dict = torch.load(cwd + '\\ml_model\\final_model.pth', map_location=torch.device('cpu'))
 model.load_state_dict(state_dict, strict=False)
-
+model.eval()
 
 def pred(text):
     print("Text Received =>", text)
