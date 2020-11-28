@@ -166,10 +166,38 @@ Final pipeline is as follows -
     ```
 3. **Defining and Loading Machine Learning model**
     * For this problem we first define our Model archichetire which is based on `BoREBTa` and then loading pre-traing model we saved in previous blog.
+    * Since we have saved the weight and biases in dictoniary form not whole model, so we need define the model again. 
+```python 
+    class ROBERTA(torch.nn.Module):
+        def __init__(self, dropout_rate=0.3):
+            super(ROBERTA, self).__init__()
+            self.roberta = RobertaModel.from_pretrained('roberta-base')
+            self.d1 = torch.nn.Dropout(dropout_rate)
+            self.l1 = torch.nn.Linear(768, 64)
+            self.bn1 = torch.nn.LayerNorm(64)
+            self.d2 = torch.nn.Dropout(dropout_rate)
+            self.l2 = torch.nn.Linear(64, 2)
+
+        def forward(self, input_ids, attention_mask):
+            _, x = self.roberta(input_ids=input_ids, attention_mask=attention_mask)
+            x = self.d1(x)
+            x = self.l1(x)
+            x = self.bn1(x)
+            x = torch.nn.Tanh()(x)
+            x = self.d2(x)
+            x = self.l2(x)
+            return x
+```
+   * After defining the RoBERTa model we load the weight we have saved in previous blog using these line of code.
+```python
+    model = ROBERTA()
+    state_dict = torch.load(cwd + '\\ml_model\\final_model.pth', map_location=torch.device('cpu'))
+    model.load_state_dict(state_dict, strict=False)
+```
     
 4. **Finnaly we wrap all whole pipeline in a single Function given below.**  
     
-    ```python
+```python
     def pred(text):
         text = text_preprocess(text)
         word_seq = np.array([vocab[word] for word in text.split() 
@@ -182,7 +210,7 @@ Final pipeline is as follows -
         pro = torch.argmax(output, axis=-1).tolist()[0]
         status = "positive" if pro == 1 else "negative"
         return status
-    ```
+```
     
 ## Step 4 - Final flask script.
 This final script is to be written in `app.py` file. This file will handel all HTTP requests we are going to use.    
