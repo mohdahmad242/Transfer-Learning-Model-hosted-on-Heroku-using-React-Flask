@@ -288,10 +288,9 @@ We expect you have GitHub account and you know how to create repository. If not,
     > https://download.pytorch.org/whl/cpu/torch-1.6.0%2Bcpu-cp37-cp37m-linux_x86_64.whl  
     > https://download.pytorch.org/whl/cpu/torchvision-0.7.0%2Bcpu-cp37-cp37m-linux_x86_64.whl
 <details> 
-    <summary>Explanation with Screenshot</summary>
-    `requirements.txt` file is used by the heroku server to download all packages. If we specify `torch == 1.6.0`, then it will download whole pytorch library. 
-    Since we are using free version of heroku, we have only `CPU` support not `GPU`. Pytorch library comes with all files required for GPU support, so we need to download only 
-    `CPU` specific files. As Heroku only provide `500 Mb` storage in free version and complete Pytorch library is more than 600 Mb, that why we need only CPU version which far     less space.
+<summary>Explanation with Screenshot</summary>  
+    
+`requirements.txt` file is used by the heroku server to download all packages. If we specify `torch == 1.6.0`, then it will download whole pytorch library. Since we are using free version of heroku, we have only `CPU` support not `GPU`. Pytorch library comes with all files required for GPU support, so we need to download only `CPU` specific files. As Heroku only provide `500 Mb` storage in free version and complete Pytorch library is more than 600 Mb, that why we need only CPU version which far less space.
     <table>
         <tr>
         <th>Before Update</th>
@@ -312,8 +311,8 @@ We expect you have GitHub account and you know how to create repository. If not,
     </table>
 </details>
     
-* Now create a repository and push all code on github repo.
-* Create Heroku account https://signup.heroku.com/ and Create New App.
+* **Now create a repository and push all code on github repo.**
+* **Create Heroku account https://signup.heroku.com/ and Create New App.**
 <details> 
     <summary>Screenshot Reference</summary>
     <p align="center">
@@ -321,7 +320,7 @@ We expect you have GitHub account and you know how to create repository. If not,
     </p>
 </details>
 
-* Choose App name and region.
+* **Choose App name and region.**
 <details> 
     <summary>Screenshot Reference</summary>
     <p align="center">
@@ -329,7 +328,7 @@ We expect you have GitHub account and you know how to create repository. If not,
     </p>
 </details>
 
-* Now go to Delpy panel from menu bar and Link your github account with heroku.
+* **Now go to Delpy panel from menu bar and Link your github account with heroku.**
 <details> 
     <summary>Screenshot Reference</summary>
     <p align="center">
@@ -337,7 +336,7 @@ We expect you have GitHub account and you know how to create repository. If not,
     </p>
 </details>
 
-* Search for repository where you have pused all your code and connect.
+* **Search for repository where you have pused all your code and connect.**
 <details> 
     <summary>Screenshot Reference</summary>
     <p align="center">
@@ -345,7 +344,7 @@ We expect you have GitHub account and you know how to create repository. If not,
     </p>
 </details>
 
-* Lastly choose branch, `Enable automatic deploy` so that it can automatically build your app when you push any changes to you reository and hit `Deploy Branch`. 
+* **Lastly choose branch, `Enable automatic deploy` so that it can automatically build your app when you push any changes to you reository and hit `Deploy Branch`. **
 <details> 
     <summary>Screenshot Reference</summary>
     <p align="center">
