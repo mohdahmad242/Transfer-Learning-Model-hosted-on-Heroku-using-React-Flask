@@ -267,14 +267,18 @@ To run the Flask open terminal in the project directory and type following comma
     flask run
 ```
 <p align="center">
+    <kbd>
   <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/heroku/flask_run.png">
+        </kbd>
 </p>
 
 * Now we can test our API on `http://127.0.0.1:5000/` with `/predict` endpoint we have created in `app.py` file.
 * To test your final API you can use any API Client (Postman, Insomnia, etc).  
 We are using `Postman` as shown in screenshot, you can learn about it here - https://www.postman.com/
 <p align="center">
-  <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/heroku/postman.png">
+    <kbd>
+  <img  src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/heroku/postman.png">
+  </kbd>
 </p> 
 
 # Diployment on Heroku.
@@ -311,47 +315,71 @@ We expect you have GitHub account and you know how to create repository. If not,
     </table>
 </details>
     
-* **Now create a repository and push all code on github repo.**
-* **Create Heroku account https://signup.heroku.com/ and Create New App.**
+1. **Now create a repository and push all code on github repo.**
+2. **Create Heroku account https://signup.heroku.com/ and Create New App.**
     <details> 
         <summary>Detail Screenshot</summary>
         <p align="center">
+            <kbd>
               <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/heroku/h1.png">
+                </kbd>
         </p>
     </details>
 
-* **Choose App name and region.**
+3. **Choose App name and region.**
     <details> 
         <summary>Detail Screenshot</summary>
         <p align="center">
+            <kbd>
               <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/heroku/h2.png">
+                </kbd>
         </p>
     </details>
 
-* **Now go to Delpy panel from menu bar and Link your github account with heroku.**
+4. **Link your github account with heroku, search your repository where you have pused all your code and connect.**
     <details> 
         <summary>Detail Screenshot</summary>
         <p align="center">
+            <kbd>
               <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/heroku/h3.png">
+                </kbd>
         </p>
     </details>
 
-* **Search for repository where you have pused all your code and connect.**
+5. **Choose branch, `Enable automatic deploy` so that it can automatically build your app when you push any changes to your reository and hit `Deploy Branch`.**
     <details> 
         <summary>Detail Screenshot</summary>
         <p align="center">
+            <kbd>
               <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/heroku/h4.png">
+                </kbd>
         </p>
     </details>
 
-* **Lastly choose branch, `Enable automatic deploy` so that it can automatically build your app when you push any changes to you reository and hit `Deploy Branch`.**
+6. **You can see App Build log. It will display any errors if occurs.**
 
     <details> 
         <summary>Detail Screenshot</summary>
         <p align="center">
+            <kbd>
               <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/heroku/h5.png">
+                </kbd>
         </p>
     </details> 
+    
+7. **Finally after successful build you can launch your app by clicking `View`**
+    * But in this case we have not include any frontend we will not see anything, although we can test our API in the same way we tested on Local by just replacing the new URL with Localhost.
+
+    <details> 
+        <summary>Detail Screenshot</summary>
+        <p align="center">
+            <kbd>
+              <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/heroku/h6.png">
+                </kbd>
+        </p>
+    </details> 
+    
+    
 
 ***
 ### Refrence
