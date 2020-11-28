@@ -189,6 +189,7 @@ Final pipeline is as follows -
             return x
 ```
    * After creating the RoBERTa model we load the weights we have saved in previous blog using these line of code.
+        * Learn more about saving and loading Model in Pytorch here - https://pytorch.org/tutorials/beginner/saving_loading_models.html
 ```python
     model = ROBERTA()
     state_dict = torch.load(cwd + '\\ml_model\\final_model.pth', map_location=torch.device('cpu'))
