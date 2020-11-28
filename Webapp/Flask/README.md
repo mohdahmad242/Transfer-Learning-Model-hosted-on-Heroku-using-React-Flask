@@ -165,8 +165,8 @@ Final pipeline is as follows -
         return text
     ```
 3. **Defining and Loading Machine Learning model**
-    * For this problem we first define our Model archichetire which is based on `BoREBTa` and then loading pre-traing model we saved in previous blog.
-    * Since we have saved the weight and biases in dictoniary form not whole model, so we need define the model again. 
+    * For this problem we first define our Model archichetire which is based on `BoREBTa` and then load pre-trained weights we saved in the previous blog.
+    * `Important` Since we have saved the state file which stores only the parameters in dictoniary form not the complete model, so we need create the model again and load these values. 
 ```python 
     class ROBERTA(torch.nn.Module):
         def __init__(self, dropout_rate=0.3):
@@ -188,7 +188,7 @@ Final pipeline is as follows -
             x = self.l2(x)
             return x
 ```
-   * After defining the RoBERTa model we load the weight we have saved in previous blog using these line of code.
+   * After creating the RoBERTa model we load the weights we have saved in previous blog using these line of code.
 ```python
     model = ROBERTA()
     state_dict = torch.load(cwd + '\\ml_model\\final_model.pth', map_location=torch.device('cpu'))
