@@ -266,8 +266,16 @@ To run the Flask open terminal in the project directory and type following comma
 ```bash
     flask run
 ```
-Now, to test your final API you can use any API Client (Postman, Insomnia, etc).  
-We are using `Postman`, you can learn about it here - https://www.postman.com/
+<p align="center">
+  <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/heroku/flask_run.png">
+</p>
+
+* Now we can test our API on `http://127.0.0.1:5000/` with `/predict` endpoint we have created in `app.py` file.
+* To test your final API you can use any API Client (Postman, Insomnia, etc).  
+We are using `Postman` as shown in screenshot, you can learn about it here - https://www.postman.com/
+<p align="center">
+  <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/heroku/postman.png">
+</p> 
 
 # Diployment on Heroku.
 We expect you have GitHub account and you know how to create repository. If not, [learn here](https://guides.github.com/activities/hello-world/)
