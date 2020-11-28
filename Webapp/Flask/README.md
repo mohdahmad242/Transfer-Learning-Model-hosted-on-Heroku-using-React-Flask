@@ -287,19 +287,72 @@ We expect you have GitHub account and you know how to create repository. If not,
 > **IMPOERTANT** In your requrement.txt file remove torch and put these and same for touchvision   
     > https://download.pytorch.org/whl/cpu/torch-1.6.0%2Bcpu-cp37-cp37m-linux_x86_64.whl  
     > https://download.pytorch.org/whl/cpu/torchvision-0.7.0%2Bcpu-cp37-cp37m-linux_x86_64.whl
-    <details> 
+<details> 
     <summary>Explanation with Screenshot</summary>
     `requirements.txt` file is used by the heroku server to download all packages. If we specify `torch == 1.6.0`, then it will download whole pytorch library. 
     Since we are using free version of heroku, we have only `CPU` support not `GPU`. Pytorch library comes with all files required for GPU support, so we need to download only 
     `CPU` specific files. As Heroku only provide `500 Mb` storage in free version and complete Pytorch library is more than 600 Mb, that why we need only CPU version which far     less space.
-    </details>
+    <table>
+        <tr>
+        <th>Before Update</th>
+        <th>After Update</th>
+        </tr>
+        <tr>
+        <td>
+        <p align="center">
+          <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/heroku/before_req.png">
+        </p> 
+        </td>
+        <td>
+        <p align="center">
+          <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/heroku/after_req.png">
+        </p> 
+        </td>
+        </tr>
+    </table>
+</details>
+    
 * Now create a repository and push all code on github repo.
-* Create Heroku account https://signup.heroku.com/
-* Link you github account with heroku.
-* Choose the github repository where you push all your code.
-* Deploy. 
-    
-    
+* Create Heroku account https://signup.heroku.com/ and Create New App.
+<details> 
+    <summary>Screenshot Reference</summary>
+    <p align="center">
+          <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/heroku/h1.png">
+    </p>
+</details>
+
+* Choose App name and region.
+<details> 
+    <summary>Screenshot Reference</summary>
+    <p align="center">
+          <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/heroku/h2.png">
+    </p>
+</details>
+
+* Now go to Delpy panel from menu bar and Link your github account with heroku.
+<details> 
+    <summary>Screenshot Reference</summary>
+    <p align="center">
+          <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/heroku/h3.png">
+    </p>
+</details>
+
+* Search for repository where you have pused all your code and connect.
+<details> 
+    <summary>Screenshot Reference</summary>
+    <p align="center">
+          <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/heroku/h4.png">
+    </p>
+</details>
+
+* Lastly choose branch, `Enable automatic deploy` so that it can automatically build your app when you push any changes to you reository and hit `Deploy Branch`. 
+<details> 
+    <summary>Screenshot Reference</summary>
+    <p align="center">
+          <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/heroku/h5.png">
+    </p>
+</details> 
+
 ***
 ### Refrence
 * https://www.digitalocean.com/community/tutorials/how-to-make-a-web-application-using-flask-in-python-3
