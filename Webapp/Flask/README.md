@@ -26,19 +26,19 @@
  <br>
 
 ## Introduction
-Flask is a lightweight web framwork written in python. Flask is easy to get started for beginner. It is classified as a microframework because it does not require particular tools or libraries. It has no database abstraction layer, form validation, or any other components where pre-existing third-party libraries provide common functions.  
-In this blog you will learn how to set up a Flask project and how to deploy Machine Learning model you have developed in [`previous blog`](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/README.md). By the end of this blog you will be able to deploy any model using `Flask` on `Heroku`.
+Flask is a lightweight web framework written in Python. Flask is easy to use, and to get started for beginners. It is classified as a microframework because it does not require particular tools or libraries to work. It has no database abstraction layer, form validation, or any other components where pre-existing third-party libraries provide common functions.  
+In this section of the tutorial, you will learn how to set up a Flask project and to deploy a Machine Learning model you have developed in the [`previous section`](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/README.md). By the end of this section you will be able to deploy any model using `Flask` on `Heroku`.
 
 ## Pre-Requisities
 To implement the complete project you will need the following:
 * Any operating system Linux, Windows, or Mac OS.
 * Python 3+ installed https://www.python.org/
-* Basic Python programming https://docs.python.org/3/tutorial/
+* Basic Python programming knowledge https://docs.python.org/3/tutorial/
 * Basic Git knowledge https://git-scm.com/
 
 
-## Step 1 - Instaling Flask and related package  
-* Before installing Flask, we will create separate `python environment` for this project.
+## Step 1 - Installing Flask and related package  
+* Before installing Flask, we will create separate `python environment` for this project. If you are using Anaconda, open Anaconda Prompt, or else open your Command Prompt in Windows. Linux users can open their terminal instead. Enter the following code to create an environment named as `venv`.
 ```python
 python3 -m venv env
 ```
@@ -115,7 +115,7 @@ Final pipeline is as follows -
         text = re_sub(r"\b(\S*?)(.)\2{2,}\b", r"\1\2 <elong>")
         return text
    
-    # Creating ROBERTA Model 
+    # Creating RoBERTa Model 
     class ROBERTA(torch.nn.Module):
         def __init__(self, dropout_rate=0.3):
             super(ROBERTA, self).__init__()
@@ -162,14 +162,14 @@ Final pipeline is as follows -
 
 
 1. **Getting data.**
-    * Data will be recieved in JSON formate(we will disscus later about how to recieve data).
+    * Data will be recieved in JSON format (we will disscus later about how to recieve data).
     ```json 
     {
            "review": "Sample review"
      }
     ```
 2. **Pre-Processing**  
-    We pre-processed the text by lower casing, removing spectial character, etc. We will use the function given below.
+    We pre-process the text by turning upper case alphabets to lower case, removing special characters, etc. We will use the function given below.
     ```python
     def text_preprocess(text):
         text = str(text)
@@ -192,8 +192,8 @@ Final pipeline is as follows -
         text = re_sub(r"\b(\S*?)(.)\2{2,}\b", r"\1\2 <elong>")
         return text
     ```
-3. **Creating Machine Learning model and Loading weights.**
-    * For this problem we first define our Model archichetire which is based on [`BoREBTa`](https://arxiv.org/abs/1907.11692) and then load pre-trained weights we saved in the [`previous blog`](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/README.md).
+3. **Defining Machine Learning Model and Loading weights.**
+    * For this problem we first define our Model archichetire which is based on [`BoREBTa`](https://arxiv.org/abs/1907.11692) and then load pre-trained weights we saved in the [`previous section`](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/README.md).
     * `Important` Since we have saved the state file which stores only the parameters in dictoniary form not the complete model, so we need create the model again and load these values. 
 ```python 
     class ROBERTA(torch.nn.Module):
@@ -216,7 +216,7 @@ Final pipeline is as follows -
             x = self.l2(x)
             return x
 ```
-   * After creating the RoBERTa model we load the weights we have saved in [`previous blog`](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/README.md) using these line of code.
+   * After creating the RoBERTa model we load the weights we have saved in [`previous section`](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/README.md) using these line of code.
         * Learn more about saving and loading Model in Pytorch here - https://pytorch.org/tutorials/beginner/saving_loading_models.html
 ```python
     model = ROBERTA()
@@ -241,7 +241,7 @@ Final pipeline is as follows -
         return status
 ```
     
-## Step 4 - Final flask script.
+## Step 4 - Final Flask script.
 This final script is to be written in `app.py` file. This file will handel all HTTP requests we are going to use.    
 In this file we will `import pred()` function we created in pipeline section then `import Flask` to create an app instance.
 ```python
@@ -277,7 +277,7 @@ In this file we will `import pred()` function we created in pipeline section the
     
 </details>
 
-We will use this instance to handel HTTP request. First we will define a route decorator `@app.route()` then pass API end name, here we use **`/predict`**.
+We will use this instance to handle HTTP request. First we will define a route decorator `@app.route()` then pass API end name, here we use **`/predict`**.
 Since, we will be receiving our text data on this route, here we will pass method as `POST`.  
 Learn about basics of newtorking if you don't know [Learn Here](https://www.toolsqa.com/rest-assured/rest-routes/)
 ```python
@@ -313,19 +313,19 @@ We are using `Postman` as shown in screenshot, you can learn about it here - htt
   </kbd>
 </p> 
 
-# Diployment on Heroku.
-We expect you have GitHub account and you know how to create repository. If not, [learn here](https://guides.github.com/activities/hello-world/)
+# Deployment on Heroku.
+We expect you have GitHub account and the knowledge of how to create repository. If not, [learn here](https://guides.github.com/activities/hello-world/)
 1. **Create a file naming `Procfile` in main directory. This file specify which command to run at app startup, for our app write this command**
     ```bash
     web: gunicorn --bind 0.0.0.0:$PORT main_app:app
     ```
-> **IMPOERTANT** In your requrement.txt file remove torch and touchvision, put these url instead.   
+> **IMPORTANT** In your requrement.txt file remove torch and touchvision, put these url instead.   
     > https://download.pytorch.org/whl/cpu/torch-1.6.0%2Bcpu-cp37-cp37m-linux_x86_64.whl  
     > https://download.pytorch.org/whl/cpu/torchvision-0.7.0%2Bcpu-cp37-cp37m-linux_x86_64.whl
 <details> 
 <summary>Explanation with Screenshot</summary>  
     
-`requirements.txt` file is used by the heroku server to download all packages. If we specify `torch == 1.6.0`, then it will download whole pytorch library. Since we are using free version of heroku, we have only `CPU` support not `GPU`. Pytorch library comes with all files required for GPU and CPU support, so we need to download only `CPU` specific files. As Heroku only provide `500 Mb` storage in free version and complete Pytorch library is more than 600 Mb and CPU specific is nearly 160 Mb, that why we need only CPU version which far less space.
+`requirements.txt` file is used by the heroku server to download all packages. If we specify `torch == 1.6.0`, then it will download whole pytorch library. Since we are using free version of heroku, we have only `CPU` support not `GPU`. Pytorch library comes with all files required for GPU and CPU support, so we need to download only `CPU` specific files. As Heroku only provides `500 MB` storage in free version and complete Pytorch library is more than 600 Mb, we switch to the CPU version as it takes only 160 MB of space.
     <table>
         <tr>
         <th>Before Update</th>
@@ -346,7 +346,7 @@ We expect you have GitHub account and you know how to create repository. If not,
     </table>
 </details>
     
-2. **Now create a repository and push all code on github repository.**
+2. **Now create a repository and push all code on github repository. If you don't know how to do that, learn it [here](https://www.datacamp.com/community/tutorials/git-push-pull)**
 3. **Create Heroku account https://signup.heroku.com/ and Create New App.**
     <details> 
         <summary>Detail Screenshot</summary>
@@ -367,7 +367,7 @@ We expect you have GitHub account and you know how to create repository. If not,
         </p>
     </details>
 
-5. **Link your github account with heroku, search your repository where you have pushed all your code and `connect`.**
+5. **Link your Github account with Heroku, search your repository where you have pushed all your code and `connect`.**
     <details> 
         <summary>Detail Screenshot</summary>
         <p align="center">
