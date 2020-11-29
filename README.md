@@ -174,8 +174,34 @@ df.to_csv("FILE PATH")
 
 ## Implementing Transfer Learning
 The complete implementation of this section can be found on our Repository [here](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Notebook/roberta.ipynb)
+
+### Importing Important Libraries
+To implement the code we first need to import some functions from the libraries we installed above. This can be done using:
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
+
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+
+import torch
+from torchtext.data import Field, TabularDataset, BucketIterator, Iterator
+
+from transformers import RobertaTokenizer, RobertaModel, AdamW, get_linear_schedule_with_warmup
+
+import warnings
+warnings.filterwarnings('ignore')
+from tqdm import tqdm
+
+import logging
+logging.getLogger("transformers.tokenization_utils_base").setLevel(logging.ERROR)
+
+import csv
+```
+
 ### Model Architecture
-* Before discussing the steps of Transfer Learning, we give a brief introduction of our model.
+To create our classifier we used [RoBERTa](https://arxiv.org/pdf/1907.11692.pdf) a pre-training approach for [BERT](https://arxiv.org/pdf/1810.04805.pdf) developed by various Facebook developers. BERT uses [Transformers](https://huggingface.co/transformers/) for Natural Language Understanding and application on various NLP tasks like Sequence Classification, Extractive Question Answering, Language Modeling, Sentiment Analysis, etc.   
 * We use a customized RoBERTa, which contains the RoBERTa model with some additional layers in the end.
 * The model definition contains two parts, the first contains description of layers, the second contains the order of layers.
 * The layers used are:
@@ -192,7 +218,7 @@ The complete implementation of this section can be found on our Repository [here
 * ```self.roberta``` contains the layers of the RoBERTa model.
 * ```self.d1``` and ```self.d2``` drops out random pecentage of neurons from the incoming layers during training. The percentage for dropout is defined using ```dropout_rate```, and since the dropout is completely random the model becomes robust.
 * ```self.l1```, ```self.l2```, and ```self.l3``` are Linear layers. The input parameters for Linear layers consist of input neurons or incoming neurons and output neurons.
-* ```self.l1``` has 768 incoming neurons as RoBERTa model has output embedding of 768 units in the final layer. ```self.l1``` gives 256 output units.
+* ```self.l1``` has 768 incoming neurons as RoBERTa model has output embedding of 768 units in the final layer. ```self.l1``` gives 256 output units, these 256 output neurons are selected because we have selected only first 256 words of each reiew ahead.
 * Similarly ```self.l2``` has 256 input neurons and outputs 64 units or neurons.
 * ```self.l3``` is our final layer having 2 output neurons. These 2 output neurons decide the class of the input sentence to the model.
 * ```self.bn1``` and ```self.bn2``` are [Normalization layers](https://pytorch.org/docs/stable/generated/torch.nn.LayerNorm.html). They normalize the output of the layers and ensure that the value lies between 0 and 1.
@@ -352,15 +378,75 @@ test_set_iter = Iterator(test, batch_size=PRE_TRAINING_TEST_BATCH_SIZE, device=d
 </details>
 
 
-* Once everything is set, we can start with our pre-training. But before that we need to make a few lists that would hold the training loss, validation loss, and epoch. These will be used to observe the performance of the model in later section.
-* The empty lists are defined as:
+Once everything is set, we can start with our pre-training. For a better understanding, the complete training loop is mentioned first, followed by bits of explanation.
+```python
+train_loss_list = []
+val_loss_list = []
+epc_list = []
+
+def pretrain(model, optimizer, training_set_iter, valid_set_iter, scheduler, num_epochs):
+    
+    # Pretrain linear layers, do not train bert
+    for param in model.roberta.parameters():
+        param.requires_grad = False
+    
+    model.train()
+    
+    criterion = torch.nn.CrossEntropyLoss()
+    best_valid_loss = float('Inf')
+    
+    
+    for epoch in range(num_epochs):
+        train_loss = 0.0
+        valid_loss = 0.0 
+        for (review, label), _ in training_set_iter:
+            mask = (review != PAD_INDEX).type(torch.uint8)
+            y_pred = model(input_ids=review, attention_mask=mask)
+            loss = criterion(y_pred, label)
+            loss.backward()
+            optimizer.step()    
+            scheduler.step()
+            optimizer.zero_grad()
+            train_loss += loss.item()
+                
+        model.eval()
+        with torch.no_grad():                    
+            for (review, target), _ in valid_set_iter:
+                mask = (review != PAD_INDEX).type(torch.uint8)
+                y_pred = model(input_ids=review, attention_mask=mask)
+                loss = criterion(y_pred, target)
+                valid_loss += loss.item()
+
+        train_loss = train_loss / len(training_set_iter)
+        valid_loss = valid_loss / len(valid_set_iter)
+        
+        train_loss_list.append(train_loss)
+        val_loss_list.append(valid_loss)
+        epc_list.append(epoch)
+
+        # print summary
+        print('Epoch [{}/{}], Pre-Training Loss: {:.4f}, Val Loss: {:.4f}'
+              .format(epoch+1, num_epochs, train_loss, valid_loss))
+        if best_valid_loss > valid_loss:
+            best_valid_loss = valid_loss 
+            # Saving Best Pre-Trained Model as .pth file
+            torch.save({'model_state_dict': model.state_dict()}, "./best_pre_train_model.pth")
+    
+    # Set bert parameters back to trainable
+    for param in model.roberta.parameters():
+        param.requires_grad = True
+     
+    
+        
+    print('Pre-training done!')
+
+```
+* We define three empty lists that would hold the training loss, validation loss, and epoch. These will be used to observe the performance of the model in later section.The empty lists are defined as:
 ```python
 train_loss_list = []
 val_loss_list = []
 epc_list = []
 ```
-* In our code, the ```pretrain((model, optimizer, training_set_iter, valid_set_iter, scheduler, num_epochs):``` function contains the pre-training steps.
-* Here we shall explain in bits what each line does.
 * For our model, we have decided not to train the RoBERTa layers, to do this we need to freeze the weights. This is done using:
 ```python
 for param in model.roberta.parameters():
@@ -444,74 +530,6 @@ if best_valid_loss > valid_loss:
 for param in model.roberta.parameters():
         param.requires_grad = True
 ```
-
-* Once completed, the pre-training block would look like:
-
-<details>
- <summary>View Code</summary>
-
-```python
-train_loss_list = []
-val_loss_list = []
-epc_list = []
-
-def pretrain(model, optimizer, training_set_iter, valid_set_iter, scheduler, num_epochs):
-    
-    # Pretrain linear layers, do not train bert
-    for param in model.roberta.parameters():
-        param.requires_grad = False
-    
-    model.train()
-    
-    criterion = torch.nn.CrossEntropyLoss()
-    best_valid_loss = float('Inf')
-    
-    
-    for epoch in range(num_epochs):
-        train_loss = 0.0
-        valid_loss = 0.0 
-        for (review, label), _ in training_set_iter:
-            mask = (review != PAD_INDEX).type(torch.uint8)
-            y_pred = model(input_ids=review, attention_mask=mask)
-            loss = criterion(y_pred, label)
-            loss.backward()
-            optimizer.step()    
-            scheduler.step()
-            optimizer.zero_grad()
-            train_loss += loss.item()
-                
-        model.eval()
-        with torch.no_grad():                    
-            for (review, target), _ in valid_set_iter:
-                mask = (review != PAD_INDEX).type(torch.uint8)
-                y_pred = model(input_ids=review, attention_mask=mask)
-                loss = criterion(y_pred, target)
-                valid_loss += loss.item()
-
-        train_loss = train_loss / len(training_set_iter)
-        valid_loss = valid_loss / len(valid_set_iter)
-        
-        train_loss_list.append(train_loss)
-        val_loss_list.append(valid_loss)
-        epc_list.append(epoch)
-
-        # print summary
-        print('Epoch [{}/{}], Pre-Training Loss: {:.4f}, Val Loss: {:.4f}'
-              .format(epoch+1, num_epochs, train_loss, valid_loss))
-        if best_valid_loss > valid_loss:
-            best_valid_loss = valid_loss 
-            # Saving Best Pre-Trained Model as .pth file
-            torch.save({'model_state_dict': model.state_dict()}, "./best_pre_train_model.pth")
-    
-    # Set bert parameters back to trainable
-    for param in model.roberta.parameters():
-        param.requires_grad = True
-     
-    
-        
-    print('Pre-training done!')
-```
-</details>
 
 
 * The above set of codes defined our pre-training steps, now lets look at how the pre-training actually takes place.
