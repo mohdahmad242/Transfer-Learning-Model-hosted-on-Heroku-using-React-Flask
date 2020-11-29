@@ -132,6 +132,13 @@ The complete implementation of this section can be found on our Repository [here
 * ```self.l3``` is our final layer having 2 output neurons. These 2 output neurons decide the class of the input sentence to the model.
 * ```self.bn1``` and ```self.bn2``` are [Normalization layers](https://pytorch.org/docs/stable/generated/torch.nn.LayerNorm.html). They normalize the output of the layers and ensure that the value lies between 0 and 1.
 * Once we have our layers defined, we need to tell the model how to use them to compute the outputs. The order in which the layers occur is shown in the diagram below.
+
+<p align="center">
+  <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/FinalLayerLayout.jpg" />
+</p>
+
+
+
 * The above flowchart can be implemented using:
 ```python
 def forward(self, input_ids, attention_mask):
