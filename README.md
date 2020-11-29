@@ -2,44 +2,109 @@
 > Transfer Learning model using RoBERTa on IMDb dataset deployed on React and Flask.  
 > Try out [here](https://imdbmovienew.herokuapp.com/), Run on Google Collab [here](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Notebook/roberta.ipynb)
 
+<br>
+<h1 align="center">Chapter One</h1>
+<h2 align="center">Training Deep Learning Models</h2>
+<p align="center">
+ <a href="https://circleci.com/gh/huggingface/transformers">
+  <img alt="Build" src="https://img.shields.io/badge/python-3%2B-brightgreen?logo=Python">
+ </a>
+ <a href="https://circleci.com/gh/huggingface/transformers">
+  <img alt="Build" src="http://img.shields.io/static/v1?label=Pytorch&message=1.6.0&color=brightgreen&logo=Pytorch">
+ </a>
+</p>
+<br>
+
 ## Overview
  
 <p align="center">
   <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/finalResult.gif">
 </p>  
 
-In this tutorial we will create a text classifier using RoBERTa model in PyTorch and deploy it using Heroku on a web application created using Flask and React JS. The topics covered in our tutorial are:
-* Creating a basic Text Classifier
-* Creating a transfer learning model using RoBERTa
-* Deploying the model on a web application 
+In this tutorial we will create a text classifier using RoBERTa model in PyTorch and deploy it using Heroku on a web application created using Flask and React JS. We perform the task of [Sentiment Analysis](https://towardsdatascience.com/sentiment-analysis-concept-analysis-and-applications-6c94d6f58c17) on a given piece of text, and try to classify the text as either positive or negative. The topics covered in our tutorial are:
+* Chapter 1: [Creating a Text Classifier]()
+* Chapter 2: [Deployment of Machine Learning Model on Heroku using Flask](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Webapp/Flask/README.md)
+* Chapter 3: []() 
 
-## Pre-Requisities
+## Pre-Requisities for the Complete Tutorial
 To implement the complete project you will need the following:
 * Create a [GitHub account](https://github.com/join)
 * Create a [Heroku account](https://signup.heroku.com/)
 * Have knowledge of PyTorch and Deep Learning, follow the starter project [here](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Notebook/starter%20model.ipynb)
 
 ## Introduction
-In our tutorial we discuss how to implement [Transfer Learning](https://ruder.io/transfer-learning/index.html#applicationsoftransferlearning) using PyTorch library and then deploy the model on a web application. Before we begin let us have a look at what transfer learning is. In case you know about it, please proceed to the [next section](). In our tutorial we have assumed that you have some previous knowledge of deep learning, in case you are new, go through our [starter project](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Notebook/starter%20model.ipynb) first.
+[PyTorch](https://github.com/pytorch/pytorch) is a Python package based on [Torch](http://torch.ch/). PyTorch is one of the most used Deep Learning libraries in recent times for the following reasons:
++ It provides Tensor computation with strong GPU acceleration.
++ Unlike other Deep Learning Libraries where we first define the entire computation graph before running the model, PyTorch allows dymanic defining of graphs.
++ It works excellently well with most used libraries like NumPy, SciPy, and Cython.  
+
+
+In our tutorial we discuss how to implement [Transfer Learning](https://ruder.io/transfer-learning/index.html#applicationsoftransferlearning) using the PyTorch library and then deploy the model on a web application. By the end of this section, you will be able to execute your own Neural Network using PyTorch and save the weights for reusing. Before we begin let us have a look at the pre-requisites for the section. .
+
+## Pre-Requisites for this section
+To implement the project you will need the following.
+* Python 3+ installed https://www.python.org/
+* Basic Python programming knowledge https://docs.python.org/3/tutorial/
+* In case you have a GPU installed in your machine and CUDA enabled you can train it on your local machine 
+* Alternatively you can try [Google Colab](https://colab.research.google.com/notebooks/intro.ipynb#recent=true) which provides you open access to GPUs for training a neural network.
+* You can also go through our Colab notebook for the project [here]().
+
+### Step 1- Installing Important Libraries
+Before initiating this section, we will create a seperate `python environment` for our project. In case you are using Anaconda, open Anaconda Prompt, or else open your Command Prompt in Windows. Linux users can open their terminal instead. Enter the following code to create an environment named as `venv`.
+```python
+python3 -m venv env
+```
+* To activate the created environment, enter the following code in your terminal.
+```python
+source venv/bin/activate
+```
+* We now install the needed libraries for the project. The below mentioned steps are for poeple using Windows machine. For people using other machine please refer to the installation section [here](https://pytorch.org/) In case you have a GPU with CUDA 10.2 enabled, enter the section 1, else proceed with section 2.
+* Section 1:
+```python
+pip install pytorch torchvision torchaudio cudatoolkit=10.2 -c pytorch
+pip install numpy pandas transformer pickel
+```
+* Section 2:
+```python
+pip install pytorch torchvision torchaudio cpuonly -c pytorch
+pip install numpy pandas transformer pickel
+```
+
 
 ### Transfer Learning
-* Focuses on using stored knowledge from previous training and using it on a similar but different dataset.
-* Extracts features from a relatively large dataset, this step is called pre-training and then uses this knowledge on the target dataset.
-* Pre-training usually done on a large dataset and then fine tuned on the target dataset.
-* Used when the target dataset is relatively small in size.
-* A real world example can be, using your knowledge of riding a bicycle to learn how to ride a motorcycle.
+Any Deep Learning model works on feature extraction from the given data using the model developed for the task. At the start of any model, the weights of the layers are initiated randomly and then through training iterations the layers learn to extract features from the data. Training these layers takes a lot of time and computation power which is not accessible to everyone, this is where Deep Learning comes into play. Transfer learning focuses on using the knowledge from previous training and implements in on a similar task. It extracts features from a relevant large dataset and then fine-tunes of the given smaller dataset. Below are the reasons why Transfer Learning is a suited training method:
+* Acts as an optimization technique that allows rapid progress and improved performance in lesser training time.
+* Uses vast knowledge accumulated over a vast training resource for a smaller but related task.
+* A real world example can be, using your knowledge of riding a bicycle to learn how to ride a motorcycle.  
+
+In case you want to know more about transfer learning, here are a few resources:
+* [What is being transferred in transfer learning ?](https://arxiv.org/abs/2008.11687)
+* [A Survey on Deep Transfer Learning](https://arxiv.org/abs/1808.01974)
+* [A Gentle Introduction to Transfer Learning for Deep Learning](https://machinelearningmastery.com/transfer-learning-for-deep-learning/)
 
 ## Dataset
 #### IMDb Dataset
+The IMDb Dataset is a collection of 50000 movie reviews collected from the IMDb website which belong to two different classes 'positive' and 'negative'. The dataset has 25000 labeled reviews for training, and another 25000 reviews for testing.
 * Dataset can be downloaded from [http://ai.stanford.edu/~amaas/data/sentiment/](http://ai.stanford.edu/~amaas/data/sentiment/).
 * Pre-processed dataset can be downloaded from reporsitory [here](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Dataset/IMDB_prePro.csv).
-* 25000 highly polar movie reviews for training
-* 25000 movie reviews for testing
 * Classes of the dataset balanced, so no class biasness observed.
+* View a brief of the dataset below:
+<details>
+ <summary>View Dataset</summary>
+ 
+ 
+ | review                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | sentiment |
+|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------|
+| One of the other reviewers has mentioned   that after watching just 1 Oz episode you'll be hooked. They are right, as   this is exactly what happened with me.<br /><br />The first thing   that struck me about Oz was its brutality and unflinching scenes of violence,   which set in right from the word GO. Trust me, this is not a show for the   faint hearted or timid. This show pulls no punches with regards to drugs, sex   or violence. Its is hardcore, in the classic use of the word.<br   /><br />It is called OZ as that is the nickname given to the Oswald   Maximum Security State Penitentary. It focuses mainly on Emerald City, an   experimental section of the prison where all the cells have glass fronts and   face inwards, so privacy is not high on the agenda. Em City is home to   many..Aryans, Muslims, gangstas, Latinos, Christians, Italians, Irish and   more....so scuffles, death stares, dodgy dealings and shady agreements are   never far away.<br /><br />I would say the main appeal of the   show is due to the fact that it goes where other shows wouldn't dare. Forget   pretty pictures painted for mainstream audiences, forget charm, forget   romance...OZ doesn't mess around. The first episode I ever saw struck me as   so nasty it was surreal, I couldn't say I was ready for it, but as I watched   more, I developed a taste for Oz, and got accustomed to the high levels of   graphic violence. Not just violence, but injustice (crooked guards who'll be   sold out for a nickel, inmates who'll kill on order and get away with it,   well mannered, middle class inmates being turned into prison bitches due to   their lack of street skills or prison experience) Watching Oz, you may become   comfortable with what is uncomfortable viewing....thats if you can get in   touch with your darker side. | positive  |
+| A wonderful little production. <br   /><br />The filming technique is very unassuming- very old-time-BBC   fashion and gives a comforting, and sometimes discomforting, sense of realism   to the entire piece. <br /><br />The actors are extremely well   chosen- Michael Sheen not only "has got all the polari" but he has   all the voices down pat too! You can truly see the seamless editing guided by   the references to Williams' diary entries, not only is it well worth the   watching but it is a terrificly written and performed piece. A masterful   production about one of the great master's of comedy and his life. <br   /><br />The realism really comes home with the little things: the   fantasy of the guard which, rather than use the traditional 'dream'   techniques remains solid then disappears. It plays on our knowledge and our   senses, particularly with the scenes concerning Orton and Halliwell and the   sets (particularly of their flat with Halliwell's murals decorating every   surface) are terribly well done.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | positive  |
+| I thought this was a wonderful way to   spend time on a too hot summer weekend, sitting in the air conditioned   theater and watching a light-hearted comedy. The plot is simplistic, but the   dialogue is witty and the characters are likable (even the well bread   suspected serial killer). While some may be disappointed when they realize   this is not Match Point 2: Risk Addiction, I thought it was proof that Woody   Allen is still fully in control of the style many of us have grown to   love.<br /><br />This was the most I'd laughed at one of Woody's   comedies in years (dare I say a decade?). While I've never been impressed   with Scarlet Johanson, in this she managed to tone down her "sexy"   image and jumped right into a average, but spirited young woman.<br   /><br />This may not be the crown jewel of his career, but it was   wittier than "Devil Wears Prada" and more interesting than   "Superman" a great comedy to go see with friends.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | positive  |
+| Basically there's a family where a little   boy (Jake) thinks there's a zombie in his closet & his parents are   fighting all the time.<br /><br />This movie is slower than a   soap opera... and suddenly, Jake decides to become Rambo and kill the   zombie.<br /><br />OK, first of all when you're going to make a   film you must Decide if its a thriller or a drama! As a drama the movie is   watchable. Parents are divorcing & arguing like in real life. And then we   have Jake with his closet which totally ruins all the film! I expected to see   a BOOGEYMAN similar movie, and instead i watched a drama with some   meaningless thriller spots.<br /><br />3 out of 10 just for the   well playing parents & descent dialogs. As for the shots with Jake: just   ignore them.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | negative  |
+| Petter Mattei's "Love in the Time of   Money" is a visually stunning film to watch. Mr. Mattei offers us a   vivid portrait about human relations. This is a movie that seems to be   telling us what money, power and success do to people in the different   situations we encounter. <br /><br />This being a variation on   the Arthur Schnitzler's play about the same theme, the director transfers the   action to the present time New York where all these different characters meet   and connect. Each one is connected in one way, or another to the next person,   but no one seems to know the previous point of contact. Stylishly, the film   has a sophisticated luxurious look. We are taken to see how these people live   and the world they live in their own habitat.<br /><br />The only   thing one gets out of all these souls in the picture is the different stages   of loneliness each one inhabits. A big city is not exactly the best place in   which human relations find sincere fulfillment, as one discerns is the case   with most of the people we encounter.<br /><br />The acting is   good under Mr. Mattei's direction. Steve Buscemi, Rosario Dawson, Carol Kane,   Michael Imperioli, Adrian Grenier, and the rest of the talented cast, make   these characters come alive.<br /><br />We wish Mr. Mattei good   luck and await anxiously for his next work.                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | positive  |
+</details>
+ 
 
 ## Pre-Processing
-* As discussed in the starter project, Pre-Processing is an important step for text data to make the text more understandable.
-* Complete script can be found [here](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Notebook/pre-processing.ipynb)
+As discussed in the starter project, Pre-Processing is an important step for text data to make the text more understandable. The complete pre-processing script can be found [here](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Notebook/pre-processing.ipynb). Given below is the explanation of every step along with their relevance for pre-processing.
 * Tweet tokenizer from the NLTK Library is used as follows:
 ```python
 tknzr = TweetTokenizer(reduce_len=True, preserve_case=False, strip_handles=False)
