@@ -1,6 +1,4 @@
 # Transfer Learning Model hosted on Heroku using React & Flask
-> Transfer Learning model using RoBERTa on IMDb dataset deployed on React and Flask.  
-> Try out [here](https://imdbmovienew.herokuapp.com/), Run on Google Collab [here](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Notebook/roberta.ipynb)
 
 <br>
 <h1 align="center">Chapter One</h1>
@@ -15,6 +13,9 @@
 </p>
 <br>
 
+## Online Demonstration
+* Web Application: https://imdbmovienew.herokuapp.com/
+* Google Colab Notebook: https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Notebook/roberta.ipynb
 ## Overview
  
 <p align="center">
@@ -24,13 +25,15 @@
 In this tutorial we will create a text classifier using RoBERTa model in PyTorch and deploy it using Heroku on a web application created using Flask and React JS. We perform the task of [Sentiment Analysis](https://towardsdatascience.com/sentiment-analysis-concept-analysis-and-applications-6c94d6f58c17) on a given piece of text, and try to classify the text as either positive or negative. The topics covered in our tutorial are:
 * Chapter 1: [Creating a Text Classifier]()
 * Chapter 2: [Deployment of Machine Learning Model on Heroku using Flask](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Webapp/Flask/README.md)
-* Chapter 3: []() 
+* Chapter 3: [Building Frontend using React](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/tree/main/Webapp/React) 
 
 ## Pre-Requisities for the Complete Tutorial
 To implement the complete project you will need the following:
 * Create a [GitHub account](https://github.com/join)
 * Create a [Heroku account](https://signup.heroku.com/)
 * Have knowledge of PyTorch and Deep Learning, follow the starter project [here](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Notebook/starter%20model.ipynb)
+* Have basic knowledge of Python, initiating classes, creating functions
+* Have a basic knowledge of ReactJS, know about networking terms
 
 ## Introduction
 [PyTorch](https://github.com/pytorch/pytorch) is a Python package based on [Torch](http://torch.ch/). PyTorch is one of the most used Deep Learning libraries in recent times for the following reasons:
@@ -1045,47 +1048,95 @@ evaluate(CLASSIFIER_model, test_set_iter)
  * The accuracy in case of our final model is higher than the one trained before.
 The above results prove that Transfer Learning shows an improvement in the results of training.
 
+## Web Application
+Now that our text classifier is trained and can perform predictions, we proceed with our web application development. We will use the saved weights from the final classifier as our final model. Note that we have not saved the complete model, but only the weights, so in our web application files, we will initiate the model once again and assign the saved weights as we did during the transfer learning part. The first step for our web application development is to create the backend which will handle the HTTP requests sent by the user. We have used Flask as our backend application, and ReactJS to develop the front end application.
 
 ## Deploy Deep Learning Model using Flask
-Now that our classification model is ready and saved, we can deploy it using a simple Flask application. Before we start with the code, let us see what Flask is. Flask is a simple web application framework for Python, which allows the user to write applications without worrying about protocol or thread management. You can learn more about Flask from their official documentation [here](https://flask.palletsprojects.com/en/1.1.x/).  
-```python
-state_dict = torch.load(cwd + '/ml_model/modelFinal.pth', map_location=torch.device('cpu'))
-model.load_state_dict(state_dict, strict=False)
+Flask is a lightweight web application framework, which is easy to use and can scale up even complex applications. Flask allows the user to choose the libraries and tools they want to use independently, without enforcing any dependencies or project layout. There are many reasons why Flask is a superior framework for web development, which are not only restricted to:
+* Scalable
+* Simple Development
+* Flexibility
+* Performance
+* Modularity.  
 
 
-def pred(text):
-    print("Text Received =>", text)
-    word_seq = np.array([vocab[word] for word in text.split() 
-                      if word in vocab.keys()])
-    word_seq = np.expand_dims(word_seq,axis=0)
-    t = torch.from_numpy(word_seq).to(torch.int64)
-    length = torch.LongTensor([1])
-    output = model(t, length)
-    print("Got output - ",output)
-    pro = (output.item())
-    status = "positive" if pro < 0.5 else "negative"
-    return status
+The complete tutorial for the flask development can be seen on our repository [here](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/tree/main/Webapp/Flask). A basic overview for the tutorial is listed below:
+* Create a folder named ```Flask```, having a sub-folder ```ml_model```. Copy the final saved weights to the ```ml_model``` folder.
+* In the ```ml_model``` folder create a python file named ```predict.py```, and download the ```vocab.pickel``` file from our repository from [here]() and paste it in the ```ml_model``` folder too.
+* The ```vocab.pickel``` file contains vocabulary to number tokens used to create sentence sequences. The ```predict.py``` file contains the functions to predict the ouput class of the sentence.
+* In the ```Flask``` folder created above, create an ```app.py``` file. This is where we will put our final script to handle the input and output requests from the user.
+* Create a file named ```Procfile``` in the ```Flask``` folder with the following command inside it:
 ```
-The above code snippet is our predict function which takes the input text and then proceeds to use the model to predict the sentiment. We first convert our input text into the vocabulary input and then convert these into PyTorch tensors. The tensors are then given to the model, which returns the ```output```.  
-In our Flask application, we add the saved model, and a [predict.py](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Webapp/Flask/ml_model/predict.py) file that makes the predictions. This pred.py file contains the architecture of the model, that would load the saved weights of the model. Since, we had space limitations for deployment, we used a simple LSTM model to demonstrate this part. The code remains exactly same for deploying RoBERTa, only the class ```LSTM()``` would be replaced by our RoBERTa model. This model that we have used is explained in the end for your understanding. In the pred.py file, we create the model and then load the saved weights using `model.load_state_dict()` function, then we have a function ```pred()``` that uses the model to predict the incoming review request. The front-end sends the review using a form which has been created using Prediction component which will be explained in the next section. For now let us just think of it as simple input parameter sent by the front-end application. The model then predicts the sentiment and returns the sentiment. The app.py file contains the encapsulation of our request and post API. We use the POST API to send the final sentiment of the tweet to our front-end. Now that our back-end is complete, we can proceed with our Front-end application. The description of our front-end application is mentioned in the next section.  
-
-## Creating a React Front-End
-We have created a very simple React front-end for our tutorial. To initiate the process, we first create an empty folder and begin with the command
-```js
-npx create-react-app applicationName
+web: gunicorn --bind 0.0.0.0:$PORT main_app:app
 ```
-This would download the required libraries to the folder and you can initiate the basic application using
-```js
-cd my-app
-npm start
-```
-The next step would be to create the required components for our application. Before we get into the details of components, let us see what components in React actually mean. As per the official React documentation, components are similar to Javascript functions, which take arbitrary inputs and return React elements which describe what should appear on the screen. In simple language they are pieces of code, that can be used repeatedly and exist independently. More details about components can be found [here](https://reactjs.org/docs/react-component.html). We create the components in the in the [componenets folder](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/tree/main/Webapp/React/src/components). We have created two components named as Example and Prediction. The Example component uses a simple Render function to display the examples, while the Prediction component uses a Form group.  
-The [example.js](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Webapp/React/src/components/example.js) component contains the details of the examples visible on our webpage, while the [prediction.js](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Webapp/React/src/components/prediction.js) component contains a form, which allows us to submit a sentence for testing the sentiment. This testing of the sentence is executed using our custom created API, which sends a request to the server containing the sentence. The server receives the request, tests the sentence using the classifier and then returns the sentiment using get request. The visuals of the project can be changed by making changes in the from the [index.css](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Webapp/React/src/index.css) file.  
+* Initialize a GitHub repository and push the complete contents of ```Flask``` folder in the repository.
+* Create a new Heroku application, link your GitHub account and select the above initialized repository and connect.
+* Choose the main barch, and enable automatic deploy.  
 
-## LSTM Model used in Web Application
-Since, Heroku only allows a total space of 500Mb to be uploaded, we could not host our final RoBERTa model there due to its humongous size. To demonstrate the working of our web application we decided to proceed with a lighter LSTM model. You can find the architecture of the model in [predict.py](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Webapp/Flask/ml_model/predict.py) file. The model is defined in the class ```LSTM()```. The model has an embedding layer of size 500, which takes the sentences and returns the vocabulary embedding of the words. Then we have a bidirectional LSTM layer having 128 units, the bidirectional nature of the layer allows the model to look at the sentence in both front and back order. We then have a Dropout layer which drops 30% of the words LSTM output units during training. This makes our model more robust and would increase the accuracy during testing as explained above. The final layer is a Linear layer having single output. If the output is smaller than 0.5, we annotate it to the negative class, while having a value greater than 0.5 means the sentence belongs to the positive class. This brings us to  the end of our tutorial.
+
+This was only an overview of the steps, the complete step by step guide for this part is availbale [here](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/tree/main/Webapp/Flask). Once you have set up the back end of the application, all that remains is to provide a User Interface to the project. This is done using React in the next section.
+
+## Building Frontend using React
+React is a simple javascript framework developed by Facebook developers and available for open use. There are numerous benefits of using React, some of them are:
+* Declarative, efficient and flexible Javascript library
+* Lets you compose complex UIs using small isolated pieces of codes, referred as components
+* Modular, hence each component is individual and can be managed seperately.  
+
+
+The complete tutorial for this step is available [here](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/tree/main/Webapp/React). Below is a breif overview of the steps:
+* Set up a development environment using node and npm. This can be done on a fresh folder of your choice by writing the below code in terminal.
+```
+npx create-react-app react-app
+```
+* Change directory and enter the react-app directory using your terminal and install the packages using:
+```
+npm install react-router-dom
+npm install react-bootstrap
+npm install axios
+npm install http-proxy-middleware
+```
+OR
+```
+ npm install axios http-proxy-middleware react-router-dom react-bootstrap
+```
+* Create the basic components as mentioned in the tutorial.
+
 
 ## Summarizing it all
-The project is finally complete. To summarize it, here is the encapsulated version of it all. We first created a pre-trained model of our choice, which was transferred to an exact replica, the replica was trained on a similar dataset (same dataset) in our tutorial. This model was then saved for deployment. A flask application was created which had functions to handle the post and get requests from the front-end. The flask application has a prediction.py file which loads the saved model and uses it to make predictions. Then we created a front-end using React, where the user can enter reviews through a form and get the desired output sentiment. The demonstration for the latter part was done using a simple LSTM model due to limitations in space. The final application was then hosted on Heroku server.
+This brings us to the end of our tutorial. In case you had any difficulties in understanding any part of the project, feel free to raise an issue or contact us on our email ids mentioned below. By the end of this project we aim that you can now:
+* Explain what Transfer learning is, and how to implement it from scratch
+* Create a Text Classifier
+* Create a Flask Application and deploy it on Heroku
+* Create a React Frontend Application  
 
 
+Social Handles:
+* Mohd Azhan- mohd178974@st.jmi.ac.in
+* Mohammad Ahmad- md.ahmad0652@gmail.com  
+
+Alternatively you can connect with us on LinkedIn:
+* [Mohd Azhan](https://www.linkedin.com/in/azhanmohammed/)
+* [Mohammad Ahmad](https://www.linkedin.com/in/mohammad-ahmad-02891415b/)  
+
+## References
+
+### Official Documentations:
+* [PyTorch](https://pytorch.org/docs/stable/index.html)
+* [Flask](https://flask.palletsprojects.com/en/1.1.x/quickstart/)
+* [React](https://reactjs.org/tutorial/tutorial.html#setup-for-the-tutorial)
+* [Scikit-Learn](https://scikit-learn.org/stable/index.html)
+* [Transformers](https://github.com/huggingface/transformers)
+* [BERT](https://github.com/google-research/bert)
+* [RoBERTa](https://github.com/pytorch/fairseq/tree/master/examples/roberta)
+
+### Blogs and Articles:
+* [Transfer Learning- Sebastian Ruder](https://ruder.io/transfer-learning/index.html#applicationsoftransferlearning)
+* [A Gentle Introduction to Transfer Learning for Deep Learning- Jason Brownlee](https://machinelearningmastery.com/transfer-learning-for-deep-learning/)
+* [How To Make a Web Application Using Flask in Python 3- Abelhadi Dyouri](https://www.digitalocean.com/community/tutorials/how-to-make-a-web-application-using-flask-in-python-3)
+* [LSTM Text Classification Using Pytorch- Raymond Cheng](https://towardsdatascience.com/lstm-text-classification-using-pytorch-2c6c657f8fc0)
+
+### Published Literature
+* [RoBERTa: A Robustly Optimized BERT Pretraining Approach](https://arxiv.org/pdf/1907.11692.pdf)
+* [BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding](https://arxiv.org/pdf/1810.04805.pdf)
+* [What is being transferred in transfer learning ?](https://arxiv.org/abs/2008.11687)
+* [A Survey on Deep Transfer Learning](https://arxiv.org/abs/1808.01974)
