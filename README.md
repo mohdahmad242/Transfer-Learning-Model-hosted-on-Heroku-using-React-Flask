@@ -17,10 +17,10 @@ In this tutorial we will create a text classifier using RoBERTa model in PyTorch
 To implement the complete project you will need the following:
 * Create a [GitHub account](https://github.com/join)
 * Create a [Heroku account](https://signup.heroku.com/)
-* Have knowledge of PyTorch and Deep Learning, follow the starter project [here]()
+* Have knowledge of PyTorch and Deep Learning, follow the starter project [here](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Notebook/starter%20model.ipynb)
 
 ## Introduction
-In our tutorial we discuss how to implement [Transfer Learning](https://ruder.io/transfer-learning/index.html#applicationsoftransferlearning) using PyTorch library and then deploy the model on a web application. Before we begin let us have a look at what transfer learning is. In case you know about it, please proceed to the [next section](). In our tutorial we have assumed that you have some previous knowledge of deep learning, in case you are new, go through our [starter project]() first.
+In our tutorial we discuss how to implement [Transfer Learning](https://ruder.io/transfer-learning/index.html#applicationsoftransferlearning) using PyTorch library and then deploy the model on a web application. Before we begin let us have a look at what transfer learning is. In case you know about it, please proceed to the [next section](). In our tutorial we have assumed that you have some previous knowledge of deep learning, in case you are new, go through our [starter project](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Notebook/starter%20model.ipynb) first.
 
 ### Transfer Learning
 * Focuses on using stored knowledge from previous training and using it on a similar but different dataset.
@@ -303,7 +303,7 @@ for param in model.roberta.parameters():
     
     model.train()
 ```
-* We then define our loss function. In case you still are facing difficulties understanding these terms, please go through our [starter project]().
+* We then define our loss function. In case you still are facing difficulties understanding these terms, please go through our [starter project](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Notebook/starter%20model.ipynb).
 * The loss function we have used is [Cross Entropy Loss](https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html).
 ```python
 criterion = torch.nn.CrossEntropyLoss()
@@ -531,7 +531,7 @@ with torch.no_grad():
                 y_pred.extend(torch.argmax(output, axis=-1).tolist())
                 y_true.extend(target.tolist())
 ```
-* Once the predictions are made, we visualize the result using [Classification Report]():
+* Once the predictions are made, we visualize the result using [Classification Report](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.classification_report.html):
 ```python
     print('Classification Report:')
     print(classification_report(y_true, y_pred, labels=[1,0], digits=4))
