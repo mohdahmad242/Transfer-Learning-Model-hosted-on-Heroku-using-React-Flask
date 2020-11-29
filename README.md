@@ -23,9 +23,9 @@
 </p>  
 
 In this tutorial we will create a text classifier using RoBERTa model in PyTorch and deploy it using Heroku on a web application created using Flask and React JS. We perform the task of [Sentiment Analysis](https://towardsdatascience.com/sentiment-analysis-concept-analysis-and-applications-6c94d6f58c17) on a given piece of text, and try to classify the text as either positive or negative. The topics covered in our tutorial are:
-* Chapter 1: [Creating a Text Classifier]()
+* Chapter 1: [Creating a Text Classifier](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/README.md)
 * Chapter 2: [Deployment of Machine Learning Model on Heroku using Flask](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Webapp/Flask/README.md)
-* Chapter 3: [Building Frontend using React](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/tree/main/Webapp/React) 
+* Chapter 3: [Building Frontend using React](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/tree/main/Webapp/React/README.md) 
 
 ## Pre-Requisities for the Complete Tutorial
 To implement the complete project you will need the following:
