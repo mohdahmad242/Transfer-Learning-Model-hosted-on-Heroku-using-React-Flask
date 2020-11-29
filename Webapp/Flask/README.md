@@ -1,4 +1,31 @@
-# Introduction
+        
+ <br>
+ <h1 align="center">Chapter Two</h1>
+ <h2 align="center">Deployment of Machine Learning Model on Heroku using Flask</h2>
+
+ <p align="center">
+    <a href="https://circleci.com/gh/huggingface/transformers">
+        <img alt="Build" src="https://img.shields.io/badge/python-3%2B-brightgreen?logo=Python">
+    </a>
+    <a href="https://circleci.com/gh/huggingface/transformers">
+        <img alt="Build" src="https://img.shields.io/badge/git-2.29.2-brightgreen?logo=git">
+    </a>
+    <a href="https://circleci.com/gh/huggingface/transformers">
+        <img alt="Heroku" src="http://img.shields.io/static/v1?label=Pytorch&message=1.6.0&color=brightgreen&logo=Pytorch">
+    </a>
+    <a href="https://circleci.com/gh/huggingface/transformers">
+        <img alt="Heroku" src="http://img.shields.io/static/v1?label=Flask&message=1.1.1&color=brightgreen&logo=Flask">
+    </a>
+    <a href="https://circleci.com/gh/huggingface/transformers">
+        <img alt="Heroku" src="http://img.shields.io/static/v1?label=Postman&message=tested&color=brightgreen&logo=Postman">
+    </a>
+    <a href="https://circleci.com/gh/huggingface/transformers">
+        <img alt="Heroku" src="http://img.shields.io/static/v1?label=Heroku&message=Deployed&color=brightgreen&logo=Heroku">
+    </a>
+</p>
+ <br>
+
+## Introduction
 Flask is a lightweight web framwork written in python. Flask is easy to get started for beginner. It is classified as a microframework because it does not require particular tools or libraries. It has no database abstraction layer, form validation, or any other components where pre-existing third-party libraries provide common functions.  
 In this blog you will learn how to set up a Flask project and how to deploy Machine Learning model you have developed in previous blog. By the end of this blog you will be able to deploy any model using `Flask` on `Heroku`.
 
@@ -164,8 +191,8 @@ Final pipeline is as follows -
         text = re_sub(r"\b(\S*?)(.)\2{2,}\b", r"\1\2 <elong>")
         return text
     ```
-3. **Defining and Loading Machine Learning model**
-    * For this problem we first define our Model archichetire which is based on `BoREBTa` and then load pre-trained weights we saved in the previous blog.
+3. **Creating Machine Learning model and Loading weights.**
+    * For this problem we first define our Model archichetire which is based on [`BoREBTa`](https://arxiv.org/abs/1907.11692) and then load pre-trained weights we saved in the [`previous blog`](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/README.md).
     * `Important` Since we have saved the state file which stores only the parameters in dictoniary form not the complete model, so we need create the model again and load these values. 
 ```python 
     class ROBERTA(torch.nn.Module):
@@ -188,7 +215,7 @@ Final pipeline is as follows -
             x = self.l2(x)
             return x
 ```
-   * After creating the RoBERTa model we load the weights we have saved in previous blog using these line of code.
+   * After creating the RoBERTa model we load the weights we have saved in [`previous blog`](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/README.md) using these line of code.
         * Learn more about saving and loading Model in Pytorch here - https://pytorch.org/tutorials/beginner/saving_loading_models.html
 ```python
     model = ROBERTA()
@@ -196,7 +223,7 @@ Final pipeline is as follows -
     model.load_state_dict(state_dict, strict=False)
 ```
     
-4. **Finnaly we wrap all whole pipeline in a single Function given below.**  
+4. **Finnaly we wrap whole pipeline in a single Function given below.**  
     
 ```python
     def pred(text):
@@ -219,30 +246,18 @@ In this file we will `import pred()` function we created in pipeline section the
 ```python
     app = Flask(__name__)
 ```
-We will use this instance to handel HTTP request. First we will define a route decorator `@app.route()` then pass API end name, here we use **`/predict`**.
-Since, we will be receiving our text data on this rout, here will we pass method as `POST`.  
-Learn about basics of newtorking if you don't know [Learn Here](https://www.toolsqa.com/rest-assured/rest-routes/)
-```python
-    @app.route('/predict', methods=['POST'])
-```
-Now, we will define a fuction which will be executed when someone make POST request on `/predict` route. In this function we will take our POST route data and pass to the `pred()` function we imported from **`ml_model/predict.py`** file.
-```python
-    def home():
-        review = request.json['review']
-        prediction = pred(review)
-        print(prediction)
-        return prediction
-```
 <details> 
-    <summary>Final code for <b>app.py</b> file is present here.</summary>
+    <summary>Final code for <b>app.py</b> file present here.</summary>
     <h3 style="display:inline-block"><summary>All this code to be written in <u><i>app.py</i></u> fie. </summary></h3>
     
 ```python
+    # Importing pred function from ml_model/predict.py file.
     from ml_model.predict import pred
 
     import os
     from flask import Flask, render_template, request, make_response, jsonify, send_file
-
+    
+    # Create an app instance using Flask
     app = Flask(__name__)
 
     # Set up the main route
@@ -261,11 +276,27 @@ Now, we will define a fuction which will be executed when someone make POST requ
     
 </details>
 
+We will use this instance to handel HTTP request. First we will define a route decorator `@app.route()` then pass API end name, here we use **`/predict`**.
+Since, we will be receiving our text data on this rout, here will we pass method as `POST`.  
+Learn about basics of newtorking if you don't know [Learn Here](https://www.toolsqa.com/rest-assured/rest-routes/)
+```python
+    @app.route('/predict', methods=['POST'])
+```
+Now, we will define a fuction which will be executed when someone make POST request on `/predict` route. In this function we will take our POST route data and pass to the `pred()` function we imported from **`ml_model/predict.py`** file.
+```python
+    def home():
+        review = request.json['review']
+        prediction = pred(review)
+        print(prediction)
+        return prediction
+```
+
 ## Step 4 - Testing final app.
 To run the Flask open terminal in the project directory and type following command in terminal.
 ```bash
     flask run
 ```
+> Output
 <p align="center">
     <kbd>
   <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/heroku/flask_run.png">
@@ -283,7 +314,7 @@ We are using `Postman` as shown in screenshot, you can learn about it here - htt
 
 # Diployment on Heroku.
 We expect you have GitHub account and you know how to create repository. If not, [learn here](https://guides.github.com/activities/hello-world/)
-* Create a file naming **`Procfile`** in main directory. 
+1. Create a file naming **`Procfile`** in main directory. 
     This file specify which command to run at app startup, for our app write this command
     ```bash
     web: gunicorn --bind 0.0.0.0:$PORT main_app:app
@@ -315,8 +346,8 @@ We expect you have GitHub account and you know how to create repository. If not,
     </table>
 </details>
     
-1. **Now create a repository and push all code on github repo.**
-2. **Create Heroku account https://signup.heroku.com/ and Create New App.**
+2. **Now create a repository and push all code on github repo.**
+3. **Create Heroku account https://signup.heroku.com/ and Create New App.**
     <details> 
         <summary>Detail Screenshot</summary>
         <p align="center">
@@ -326,7 +357,7 @@ We expect you have GitHub account and you know how to create repository. If not,
         </p>
     </details>
 
-3. **Choose App name and region.**
+4. **Choose App name and region.**
     <details> 
         <summary>Detail Screenshot</summary>
         <p align="center">
@@ -336,7 +367,7 @@ We expect you have GitHub account and you know how to create repository. If not,
         </p>
     </details>
 
-4. **Link your github account with heroku, search your repository where you have pused all your code and connect.**
+5. **Link your github account with heroku, search your repository where you have pused all your code and connect.**
     <details> 
         <summary>Detail Screenshot</summary>
         <p align="center">
@@ -346,7 +377,7 @@ We expect you have GitHub account and you know how to create repository. If not,
         </p>
     </details>
 
-5. **Choose branch, `Enable automatic deploy` so that it can automatically build your app when you push any changes to your reository and hit `Deploy Branch`.**
+6. **Choose branch, `Enable automatic deploy` so that it can automatically build your app when you push any changes to your reository and hit `Deploy Branch`.**
     <details> 
         <summary>Detail Screenshot</summary>
         <p align="center">
@@ -356,7 +387,7 @@ We expect you have GitHub account and you know how to create repository. If not,
         </p>
     </details>
 
-6. **You can see App Build log. It will display any errors if occurs.**
+7. **You can see App Build log. It will display any errors if occurs.**
 
     <details> 
         <summary>Detail Screenshot</summary>
@@ -367,8 +398,9 @@ We expect you have GitHub account and you know how to create repository. If not,
         </p>
     </details> 
     
-7. **Finally after successful build you can launch your app by clicking `View`**
-    * But in this case we have not include any frontend we will not see anything, although we can test our API in the same way we tested on Local by just replacing the new URL with Localhost.
+8. **Finally after successful build you can launch your app by clicking `View`**
+    * But in this case we have not include any frontend we will not see anything, although we can test our API in the same way we tested on Local by just replacing Localhost with the new URL.
+        > http://127.0.0.1:5000/predict => http://NEW_URL/predict
 
     <details> 
         <summary>Detail Screenshot</summary>
