@@ -228,7 +228,7 @@ To create our classifier we used [RoBERTa](https://arxiv.org/pdf/1907.11692.pdf)
 * Once we have our layers defined, we need to tell the model how to use them to compute the outputs. The order in which the layers occur is shown in the diagram below.
 
 <p align="center">
-  <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/FinalLayerLayout.jpg" />
+  <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/FinalLayerLayoutFinal.jpg" />
 </p>
 
 
