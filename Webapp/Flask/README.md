@@ -72,7 +72,7 @@ Final pipeline is as follows -
 
 
 <p align="center">
-  <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/webapplicationFlowchart.jpg" />
+  <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/webapplicationFlowchartFinal.jpg" />
 </p>
 
 
