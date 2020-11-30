@@ -1048,59 +1048,10 @@ evaluate(CLASSIFIER_model, test_set_iter)
  * The accuracy in case of our final model is higher than the one trained before.
 The above results prove that Transfer Learning shows an improvement in the results of training.
 
-## Web Application
-Now that our text classifier is trained and can perform predictions, we proceed with our web application development. We will use the saved weights from the final classifier as our final model. Note that we have not saved the complete model, but only the weights, so in our web application files, we will initiate the model once again and assign the saved weights as we did during the transfer learning part. The first step for our web application development is to create the backend which will handle the HTTP requests sent by the user. We have used Flask as our backend application, and ReactJS to develop the front end application.
-
-## Deploy Deep Learning Model using Flask
-Flask is a lightweight web application framework, which is easy to use and can scale up even complex applications. Flask allows the user to choose the libraries and tools they want to use independently, without enforcing any dependencies or project layout. There are many reasons why Flask is a superior framework for web development, which are not only restricted to:
-* Scalable
-* Simple Development
-* Flexibility
-* Performance
-* Modularity.  
-
-
-The complete tutorial for the flask development can be seen on our repository [here](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/tree/main/Webapp/Flask). A basic overview for the tutorial is listed below:
-* Create a folder named ```Flask```, having a sub-folder ```ml_model```. Copy the final saved weights to the ```ml_model``` folder.
-* In the ```ml_model``` folder create a python file named ```predict.py```, and download the ```vocab.pickel``` file from our repository from [here]() and paste it in the ```ml_model``` folder too.
-* The ```vocab.pickel``` file contains vocabulary to number tokens used to create sentence sequences. The ```predict.py``` file contains the functions to predict the ouput class of the sentence.
-* In the ```Flask``` folder created above, create an ```app.py``` file. This is where we will put our final script to handle the input and output requests from the user.
-* Create a file named ```Procfile``` in the ```Flask``` folder with the following command inside it:
-```
-web: gunicorn --bind 0.0.0.0:$PORT main_app:app
-```
-* Initialize a GitHub repository and push the complete contents of ```Flask``` folder in the repository.
-* Create a new Heroku application, link your GitHub account and select the above initialized repository and connect.
-* Choose the main barch, and enable automatic deploy.  
-
-
-This was only an overview of the steps, the complete step by step guide for this part is availbale [here](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/tree/main/Webapp/Flask). Once you have set up the back end of the application, all that remains is to provide a User Interface to the project. This is done using React in the next section.
-
-## Building Frontend using React
-React is a simple javascript framework developed by Facebook developers and available for open use. There are numerous benefits of using React, some of them are:
-* Declarative, efficient and flexible Javascript library
-* Lets you compose complex UIs using small isolated pieces of codes, referred as components
-* Modular, hence each component is individual and can be managed seperately.  
-
-
-The complete tutorial for this step is available [here](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/tree/main/Webapp/React). Below is a breif overview of the steps:
-* Set up a development environment using node and npm. This can be done on a fresh folder of your choice by writing the below code in terminal.
-```
-npx create-react-app react-app
-```
-* Change directory and enter the react-app directory using your terminal and install the packages using:
-```
-npm install react-router-dom
-npm install react-bootstrap
-npm install axios
-npm install http-proxy-middleware
-```
-OR
-```
- npm install axios http-proxy-middleware react-router-dom react-bootstrap
-```
-* Create the basic components as mentioned in the tutorial.
-
+<br>
+ <h1 align="center"><a href="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Webapp/Flask/README.md">Chapter Two</a></h1>
+ <h2 align="center">Deployment of Machine Learning Model on Heroku using Flask</h2>
+<br>
 
 ## Summarizing it all
 This brings us to the end of our tutorial. In case you had any difficulties in understanding any part of the project, feel free to raise an issue or contact us on our email ids mentioned below. By the end of this project we aim that you can now:
