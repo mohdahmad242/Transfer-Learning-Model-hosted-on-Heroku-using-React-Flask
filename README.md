@@ -63,7 +63,8 @@ To implement the complete project you will need the following:
 + It works excellently well with most used libraries like NumPy, SciPy, and Cython.  
 
 
-In our tutorial we discuss how to implement [Transfer Learning](https://ruder.io/transfer-learning/index.html#applicationsoftransferlearning) using the PyTorch library and then deploy the model on a web application. By the end of this section, you will be able to execute your own Neural Network using PyTorch and save the weights for reusing. Before we begin let us have a look at the pre-requisites for the section. .
+In our tutorial we discuss how to implement [Transfer Learning](https://ruder.io/transfer-learning/index.html#applicationsoftransferlearning) using the PyTorch library and then deploy the model on a web application. By the end of this section, you will be able to execute your own Neural Network using PyTorch and save the weights for reusing. Before we begin let us have a look at the pre-requisites for the section.  
+> The code file (Python Notebooks) for this section can be found here- https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/tree/main/Notebook  
 
 ## Pre-Requisites for this section
 To implement the project you will need the following.
@@ -71,7 +72,7 @@ To implement the project you will need the following.
 * Basic Python programming knowledge https://docs.python.org/3/tutorial/
 * In case you have a GPU installed in your machine and CUDA enabled you can train it on your local machine 
 * Alternatively you can try [Google Colab](https://colab.research.google.com/notebooks/intro.ipynb#recent=true) which provides you open access to GPUs for training a neural network.
-* You can also go through our Colab notebook for the project [here]().
+* You can also go through our Colab notebook for the project [here](https://colab.research.google.com/github/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Notebook/roberta_imdb.ipynb).
 
 ### Step 1- Installing Important Libraries
 Before initiating this section, we will create a seperate `python environment` for our project. In case you are using Anaconda, open Anaconda Prompt, or else open your Command Prompt in Windows. Linux users can open their terminal instead. Enter the following code to create an environment named as `venv`.
