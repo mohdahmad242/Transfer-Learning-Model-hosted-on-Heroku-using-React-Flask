@@ -31,7 +31,17 @@ In this section of the tutorial, you will learn how to set up a Flask project an
 
 > All code files for this project are availabe here - https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/tree/main/Webapp/Flask
 
-## Pre-Requisities
+## Contents of this Section
+* [Pre-Requisites for the section](#prerequisite)
+* [Installing Libraries](#install)
+* [Define File Structure](#file)
+* [Create Prediction Pipeline](#pred)
+* [Final Flask File](#flask)
+* [Testing Application](#test)
+* [Deploy Project on Heroku](#deploy)
+* [Summary and Conclusions](#summary)
+
+## <a name="prerequisite">Pre-Requisites for this section</a>
 To implement the complete project you will need the following:
 * Any operating system Linux, Windows, or Mac OS.
 * Python 3+ installed https://www.python.org/
@@ -39,7 +49,7 @@ To implement the complete project you will need the following:
 * Basic Git knowledge https://git-scm.com/
 
 
-## Step 1 - Installing Flask and related package  
+## <a name="install">Step 1 - Installing Flask and related package</a>  
 * Before installing Flask, we will create separate `python environment` for this project. If you are using Anaconda, open Anaconda Prompt, or else open your Command Prompt in Windows. Linux users can open their terminal instead. Enter the following code to create an environment named as `venv`.
 ```python
 python3 -m venv env
@@ -54,7 +64,7 @@ A few packages are requrired for this project like pytorch, numpy, pandas, trans
 pip install flask pytorch torchvision numpy pandas transformer pickel
 ```
 
-## Step 2 - File Structure  
+## <a name="file">Step 2 - File Structure</a>  
 We need to have a file structure for best practice.
 ```js
 ─── Flask
@@ -65,7 +75,7 @@ We need to have a file structure for best practice.
     └── app.py -------------------- (Main Flask File)
 ```
 
-## Step 3 - Creating prediction pipeline.
+## <a name="pred">Step 3 - Creating prediction pipeline.</a>
 We define our pipeline script in **`predict.py`** file under **`ml_model`** folder.  
 Final pipeline is as follows - 
     **Data -> Pre-processing -> Model -> Prediction -> Final Result**  
@@ -247,7 +257,7 @@ Final pipeline is as follows -
         return status
 ```
     
-## Step 4 - Final Flask script.
+## <a name="flask">Step 4 - Final Flask script.</a>
 This final script is to be written in `app.py` file. This file will handel all HTTP requests we are going to use.    
 In this file we will `import pred()` function we created in pipeline section then `import Flask` to create an app instance.
 ```python
@@ -298,7 +308,7 @@ Now, we will define a fuction which will be executed when someone make POST requ
         return prediction
 ```
 
-## Step 4 - Testing final app.
+## <a name="test">Step 4 - Testing final app.</a>
 To run the Flask open terminal in the project directory and type following command in terminal.
 ```bash
     flask run
@@ -319,7 +329,7 @@ We are using `Postman` as shown in screenshot, you can learn about it here - htt
   </kbd>
 </p> 
 
-# Deployment on Heroku.
+# <a name="deploy">Deployment on Heroku.</a>
 We expect you have GitHub account and the knowledge of how to create repository. If not, [learn here](https://guides.github.com/activities/hello-world/)
 1. **Create a file naming `Procfile` in main directory. This file specify which command to run at app startup, for our app write this command**
     ```bash
@@ -419,7 +429,7 @@ We expect you have GitHub account and the knowledge of how to create repository.
     
     
 ***
-## Summary and Conclusion
+## <a name="summary">Summary and Conclusion</a>
 In this blog we have created a Flask app to deploy our RoBERTa model we have created in the [`previous chapter`](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/README.md). You would have read setp by step process of creating flask app and how deploy it on `Heroku`. After this blog you can implement this blog for your project, you just need to change your pipeline based your machine learning model and them follow step by step tutorial written here.
 ***
 ### Refrence
