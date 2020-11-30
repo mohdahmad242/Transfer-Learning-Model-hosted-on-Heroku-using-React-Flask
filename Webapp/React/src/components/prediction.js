@@ -13,7 +13,7 @@ class PREDICTION extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            reply_comment_text:null,
+            review:null,
             result:null
         };
         this.onChange = this.onChange.bind(this)
@@ -30,10 +30,10 @@ class PREDICTION extends Component {
         this.setState({result: null})
           e.preventDefault()
           let data ={
-              "review": this.state.reply_comment_text
+              "review": this.state.review
           }
           axios.post(`/predict`, data).then(res => {
-            console.log(res, "ressssss");
+            console.log(res, "result");
             this.setState({result: res.data})
                 });
       }
@@ -52,8 +52,8 @@ class PREDICTION extends Component {
                         as="textarea" 
                         placeholder="Enter movie review... " 
                         type="text"
-                        name="reply_comment_text"
-                        value={this.state.reply_comment_text}
+                        name="review"
+                        value={this.state.review}
                         onChange={this.onChange}
                         />
                         </Form.Group>
@@ -62,7 +62,7 @@ class PREDICTION extends Component {
                         </Button>
                 </Form>
             </InputGroup>
-            {this.state.reply_comment_text == null ? " " : <p><h4>Entered review - </h4> {this.state.reply_comment_text}"</p>}
+            {this.state.review == null ? " " : <p><h4>Entered review - </h4> {this.state.review}"</p>}
             {this.state.result == null ? " " : <h4>Predicted value - <Badge variant="primary">{this.state.result.toUpperCase()}</Badge></h4>}
             
           </div>
