@@ -30,14 +30,25 @@ In this tutorial we will build a simple React App which will use the API we deve
 ## What is React?
 React is javascript framework developed by Facebook developers. React is a declarative, efficient, and flexible JavaScript library for building user interfaces. It lets you compose complex UIs from small and isolated pieces of code called “components”[[ref]](https://reactjs.org/tutorial/tutorial.html). It uses virtual DOM (JavaScript object), which improves the performance of the app. The JavaScript virtual DOM is faster than the regular DOM. Its modeular we can write code for individual component and manage it saparetly. We can use ReactJS on the client and server-side as well as with other frameworks.
 
-## Pre-Requisities
+## Contents of this Section
+* [Pre-Requisites for the section](#prerequisite)
+* [Getting Started](#started)
+* [File Structure](#file)
+* [Components: React](#component)
+* [Prediction Component](#pred)
+* [Example Component](#example)
+* [Main Component](#main)
+* [Deploy on Heroku](#deploy)
+* [Conclusions & Summary](#summary)
+
+## <a name="prerequisite">Pre-Requisities</a>
 We assume you are familiar with these concepts- 
 * HTML- [Learn here](https://www.w3schools.com/html/)
 * CSS- [Learn here](https://www.w3schools.com/css/)
 * JavaScript- [Learn here](https://www.w3schools.com/js/DEFAULT.asp)
  
 
-### Getting started 
+### <a name="stared">Getting started</a> 
 * Before we start writing we need to setup a development environment for this you need to have `node>=8.10` and `npm>=6.5` installed. 
 To create new project write the following code in terminal of a directory of your choice.
 ```bash
@@ -64,7 +75,7 @@ To create new project write the following code in terminal of a directory of you
 ```
 > We will look into the understanding of each package we installed later in this tutorial.
 
-### File System 
+### <a name="file">File System</a> 
 We need to have a clean flie structure which will help us to manage our code and easy to resolves bugs.
 * We remove a few files- `logo.svg, App.css, App.test.js, index.css, favicon.ico, setupTests.js`.
 * Also we add some files and folder.
@@ -138,7 +149,7 @@ to www.knit-with-scrimba.com/about or www.knit-with-scrimba.com/shop
 * Although we are using only use one route for our project, it is good to learn something extra here.
   * You can read about react-router-dom here - https://reactrouter.com/web/guides/quick-start
 
-### Our component structure 
+### <a name="component">Our component structure</a> 
  * In `app.js` file we define our main component `App` and we use `react-router-dom` to access different component based on route. In our case only one `\`.
  <details> 
     <summary>See Code</summary>
@@ -177,7 +188,7 @@ export default App;
  * For route `\`, we create a component `Main.js` in `components folder`. 
  * Further we divide our `MAIN` component in two parts `Prediction` and `Example`. **We can see the beauty of React here that we can modularize our frontend project and manage them individually.**
  
-## Prediction component
+## <a name="pred">Prediction component</a>
 * This piece code has to be written in `component/prediction.js` file.
 <details> 
     <summary>See Code</summary>
@@ -289,7 +300,7 @@ export default PREDICTION;
 * When the user clicks on submit button, the onSubmit function is executed which takes `input review` from the state varible, and changes whenever any change occurs in `Input area.`
 * The above function returns the result which will be stored in the `result` variable defined in `state` and the result will be diplayed.
  
-## Example component
+## <a name="example">Example component</a>
 * This code goes into the `components/example.js` file.
 <details> 
     <summary>See Code</summary>
@@ -339,7 +350,7 @@ export default EXAMPLE;
 
 * This component is straight forward, we add simple text which user can copy and test our model on the fly.
 
-## Main Component
+## <a name="main">Main Component</a>
 * In this component we combine the components we created in above section.
 <details> 
     <summary>See Code</summary>
@@ -406,7 +417,7 @@ module.exports = function(app) {
 
  ```
 
-# Deployment on Heroku.
+# <a name="deploy">Deployment on Heroku.</a>
 We expect you have GitHub account and the knowledge of how to create repository. If not, [learn here](https://guides.github.com/activities/hello-world/)
 > For React you need not to add any `Heroku` specific file as Heroku can automatically build your app.
 
@@ -474,7 +485,7 @@ We expect you have GitHub account and the knowledge of how to create repository.
     
     
 ***
-## Summary and Conclusion
+## <a name="summary">Summary and Conclusion</a>
 In this section of the blog we created a basic Frontend that uses the Flask API created in the [previous section](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/tree/main/Webapp/Flask). By now, we assume that you have learnt how to create a basic/ advanced text classifier, create a Flask Application and deploy it on Heroku to get an API, and incorporate a React Frontend project with this created API, and deploy the complete project on Heroku. You can now create your own text classification application and host it using Heroku. In case of any difficulties, feel free to contact us on the contact details mentioned at the end of [Section One](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask).
 
 ***
