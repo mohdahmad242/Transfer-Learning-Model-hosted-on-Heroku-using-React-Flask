@@ -27,7 +27,9 @@
 
 ## Introduction
 Flask is a lightweight web framework written in Python. Flask is easy to use, and to get started for beginners. It is classified as a microframework because it does not require particular tools or libraries to work. It has no database abstraction layer, form validation, or any other components where pre-existing third-party libraries provide common functions.  
-In this section of the tutorial, you will learn how to set up a Flask project and to deploy a Machine Learning model you have developed in the [`previous section`](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/README.md). By the end of this section you will be able to deploy any model using `Flask` on `Heroku`.
+In this section of the tutorial, you will learn how to set up a Flask project and to deploy a Machine Learning model you have developed in the [`previous chapter`](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/README.md). By the end of this section you will be able to deploy any model using `Flask` on `Heroku`.
+
+> All code files for this project are availabe here - https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/tree/main/Webapp/Flask
 
 ## Pre-Requisities
 To implement the complete project you will need the following:
@@ -193,7 +195,7 @@ Final pipeline is as follows -
         return text
     ```
 3. **Defining Machine Learning Model and Loading weights.**
-    * For this problem we first define our Model archichetire which is based on [`BoREBTa`](https://arxiv.org/abs/1907.11692) and then load pre-trained weights we saved in the [`previous section`](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/README.md).
+    * For this problem we first define our Model archichetire which is based on [`BoREBTa`](https://arxiv.org/abs/1907.11692) and then load pre-trained weights we saved in the [`previous chapter`](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/README.md).
     * `Important` Since we have saved the state file which stores only the parameters in dictoniary form not the complete model, so we need create the model again and load these values. 
 ```python 
     class ROBERTA(torch.nn.Module):
@@ -216,7 +218,7 @@ Final pipeline is as follows -
             x = self.l2(x)
             return x
 ```
-   * After creating the RoBERTa model we load the weights we have saved in [`previous section`](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/README.md) using these line of code.
+   * After creating the RoBERTa model we load the weights we have saved in [`previous chapter`](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/README.md) using these line of code.
         * Learn more about saving and loading Model in Pytorch here - https://pytorch.org/tutorials/beginner/saving_loading_models.html
 ```python
     model = ROBERTA()
@@ -414,6 +416,7 @@ We expect you have GitHub account and the knowledge of how to create repository.
     
 ***
 ## Summary and Conclusion
+In this blog we have created a Flask app to deploy our RoBERTa model we have created in the [`previous chapter`](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/README.md). You would have read setp by step process of creating flask app and how deploy it on `Heroku`. After this blog you can implement this blog for your project, you just need to change your pipeline based your machine learning model and them follow step by step tutorial written here.
 ***
 ### Refrence
 * https://www.digitalocean.com/community/tutorials/how-to-make-a-web-application-using-flask-in-python-3
