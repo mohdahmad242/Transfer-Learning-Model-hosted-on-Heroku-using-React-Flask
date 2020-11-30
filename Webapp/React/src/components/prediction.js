@@ -26,7 +26,6 @@ class PREDICTION extends Component {
       }
   
       onSubmit(e) {
-        console.log("Got request");
         this.setState({result: null})
           e.preventDefault()
           let data ={

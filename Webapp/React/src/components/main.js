@@ -3,7 +3,6 @@ import PREDICTION from "./prediction";
 import EXAMPLE from "./example";
 
 class Main extends Component {
-
   render() {
     return (
         <div style={{display:"flex",justifyContent:"center", flexDirection:"row", padding:"10px", height:"auto", width:"auto"}}>

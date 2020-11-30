@@ -1,4 +1,4 @@
-import main from "./components/main";
+import main from "./components/main"; 
 import {
   BrowserRouter as Router,
   Route

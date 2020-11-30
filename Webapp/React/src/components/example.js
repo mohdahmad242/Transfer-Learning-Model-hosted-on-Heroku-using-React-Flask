@@ -1,8 +1,6 @@
 import React, { Component} from "react";
 
-
 class EXAMPLE extends Component {
-
   render() {
     return (
       <div style={{padding:"50px", background:"#c4ffe6", height:"100%"}}>
