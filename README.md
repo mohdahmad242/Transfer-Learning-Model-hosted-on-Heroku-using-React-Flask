@@ -1107,6 +1107,7 @@ Alternatively you can connect with us on LinkedIn:
 * [A Gentle Introduction to Transfer Learning for Deep Learning- Jason Brownlee](https://machinelearningmastery.com/transfer-learning-for-deep-learning/)
 * [How To Make a Web Application Using Flask in Python 3- Abelhadi Dyouri](https://www.digitalocean.com/community/tutorials/how-to-make-a-web-application-using-flask-in-python-3)
 * [LSTM Text Classification Using Pytorch- Raymond Cheng](https://towardsdatascience.com/lstm-text-classification-using-pytorch-2c6c657f8fc0)
+* [Pre-training, Transformers, and Bi-directionality- Bilal Shahid](https://www.kdnuggets.com/2019/07/pre-training-transformers-bi-directionality.html)
 
 ### Published Literature
 * [RoBERTa: A Robustly Optimized BERT Pretraining Approach](https://arxiv.org/pdf/1907.11692.pdf)
