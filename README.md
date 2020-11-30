@@ -66,7 +66,12 @@ To implement the complete project you will need the following:
 In our tutorial we discuss how to implement [Transfer Learning](https://ruder.io/transfer-learning/index.html#applicationsoftransferlearning) using the PyTorch library and then deploy the model on a web application. By the end of this section, you will be able to execute your own Neural Network using PyTorch and save the weights for reusing. Before we begin let us have a look at the pre-requisites for the section.  
 > The code file (Python Notebooks) for this section can be found here- https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/tree/main/Notebook  
 
-## Pre-Requisites for this section
+## Contents of this Section
+* [Pre-Requisites for the section](#prerequisite)
+* [Installing Libraries](#install)
+* [Transfer Learning](#transferlearning)
+
+## <a name="prerequisite">Pre-Requisites for this section</a>
 To implement the project you will need the following.
 * Python 3+ installed https://www.python.org/
 * Basic Python programming knowledge https://docs.python.org/3/tutorial/
@@ -74,7 +79,7 @@ To implement the project you will need the following.
 * Alternatively you can try [Google Colab](https://colab.research.google.com/notebooks/intro.ipynb#recent=true) which provides you open access to GPUs for training a neural network.
 * You can also go through our Colab notebook for the project [here](https://colab.research.google.com/github/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Notebook/roberta_imdb.ipynb).
 
-### Step 1- Installing Important Libraries
+### <a name="install">Step 1- Installing Important Libraries</a>
 Before initiating this section, we will create a seperate `python environment` for our project. In case you are using Anaconda, open Anaconda Prompt, or else open your Command Prompt in Windows. Linux users can open their terminal instead. Enter the following code to create an environment named as `venv`.
 ```python
 python3 -m venv env
@@ -96,7 +101,7 @@ pip install numpy pandas transformer pickel
 ```
 
 
-### Transfer Learning
+### <a name="transferlearning">Transfer Learning</a>
 Any Deep Learning model works on feature extraction from the given data using the model developed for the task. At the start of any model, the weights of the layers are initiated randomly and then through training iterations the layers learn to extract features from the data. Training these layers takes a lot of time and computation power which is not accessible to everyone, this is where Deep Learning comes into play. Transfer learning focuses on using the knowledge from previous training and implements in on a similar task. It extracts features from a relevant large dataset and then fine-tunes of the given smaller dataset. Below are the reasons why Transfer Learning is a suited training method:
 * Acts as an optimization technique that allows rapid progress and improved performance in lesser training time.
 * Uses vast knowledge accumulated over a vast training resource for a smaller but related task.
