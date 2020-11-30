@@ -36,7 +36,7 @@
 
 ## Online Demonstration
 * Web Application: https://imdbmovienew.herokuapp.com/
-* Google Colab Notebook: https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Notebook/roberta_imdb.ipynb
+* Google Colab Notebook: https://colab.research.google.com/github/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Notebook/roberta_imdb.ipynb
 ## Overview
  
 <p align="center">
