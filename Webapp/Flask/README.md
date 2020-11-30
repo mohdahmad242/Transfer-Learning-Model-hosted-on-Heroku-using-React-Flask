@@ -195,7 +195,7 @@ Final pipeline is as follows -
         return text
     ```
 3. **Defining Machine Learning Model and Loading weights.**
-    * For this problem we first define our Model archichetire which is based on [`BoREBTa`](https://arxiv.org/abs/1907.11692) and then load pre-trained weights we saved in the [`previous chapter`](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/README.md).
+    * For this problem we first define our Model architecture which is based on [`RoBERTa`](https://arxiv.org/abs/1907.11692) and then load pre-trained weights we saved in the [`previous chapter`](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/README.md).
     * `Important` Since we have saved the state file which stores only the parameters in dictoniary form not the complete model, so we need create the model again and load these values. 
 ```python 
     class ROBERTA(torch.nn.Module):
@@ -226,7 +226,7 @@ Final pipeline is as follows -
     model.load_state_dict(state_dict, strict=False)
 ```
     
-4. **Finnaly we wrap whole pipeline in a single Function given below.**  
+4. **Finally we wrap the whole pipeline in a single Function given below.**  
     
 ```python
     def pred(text):
@@ -250,7 +250,7 @@ In this file we will `import pred()` function we created in pipeline section the
     app = Flask(__name__)
 ```
 <details> 
-    <summary>Final code for <b>app.py</b> file present here.</summary>
+    <summary>Final code for <b>app.py</b> is file present here.</summary>
     <h3 style="display:inline-block"><summary>All this code to be written in <u><i>app.py</i></u> fie. </summary></h3>
     
 ```python
