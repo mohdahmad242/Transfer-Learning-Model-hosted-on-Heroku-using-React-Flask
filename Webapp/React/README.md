@@ -25,24 +25,24 @@
  <br>
  
 ## Introduction
-In this tutorial we will build a simple React App which use the API we developed in [Flask tutorial](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Webapp/Flask/README.md).
+In this tutorial we will build a simple React App which will use the API we developed in the [Flask tutorial](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Webapp/Flask/README.md).
 ## What is React?
 React is javascript framework developed by Facebook developers. React is a declarative, efficient, and flexible JavaScript library for building user interfaces. It lets you compose complex UIs from small and isolated pieces of code called “components”[[ref]](https://reactjs.org/tutorial/tutorial.html). It uses virtual DOM (JavaScript object), which improves the performance of the app. The JavaScript virtual DOM is faster than the regular DOM. Its modeular we can write code for individual component and manage it saparetly. We can use ReactJS on the client and server-side as well as with other frameworks.
 
 ## Pre-Requisities
-We assume you are familiar with these concepts - 
-* HTML  [Learn here](https://www.w3schools.com/html/)
-* CSS  [Learn here](https://www.w3schools.com/css/)
-* JavaScript  [Learn here](https://www.w3schools.com/js/DEFAULT.asp)
+We assume you are familiar with these concepts- 
+* HTML- [Learn here](https://www.w3schools.com/html/)
+* CSS- [Learn here](https://www.w3schools.com/css/)
+* JavaScript- [Learn here](https://www.w3schools.com/js/DEFAULT.asp)
  
 
 ### Getting started 
-* Before we start writing we need to setup development environment for this you need to have `node>=8.10` and `npm>=6.5` installed. 
-To create new project witre following code in terminal of a directory of your choice.
+* Before we start writing we need to setup a development environment for this you need to have `node>=8.10` and `npm>=6.5` installed. 
+To create new project write the following code in terminal of a directory of your choice.
 ```bash
   npx create-react-app react-app
 ```
-* To run this initial project `cd` in to `react-app` directory and hit `npm start`.
+* To run this initial project `cd` (change directory) in to `react-app` directory and enter `npm start` in the terminal.
 > It will pop up new tab in your browser serving on `Localhost 3000`
 <p align="center">
     <kbd>
@@ -50,7 +50,7 @@ To create new project witre following code in terminal of a directory of your ch
   </kbd>
 </p> 
 
-* Now we need to download some packages we will use in our project.
+* Now we need to download some packages which we will use in our project.
 ```bash
   npm install react-router-dom
   npm install react-bootstrap
@@ -61,12 +61,12 @@ To create new project witre following code in terminal of a directory of your ch
   
   npm install axios http-proxy-middleware react-router-dom react-bootstrap
 ```
-> We will understand each package we install later in this tutorial.
+> We will look into the understanding of each package we installed later in this tutorial.
 
 ### File System 
-We need have a clean flie structure which help us to manage our code and easy to resolves bugs.
-* We remove a few files - `logo.svg, App.css, App.test.js, index.css, favicon.ico, setupTests.js`.
-* And added some files and folder.
+We need to have a clean flie structure which will help us to manage our code and easy to resolves bugs.
+* We remove a few files- `logo.svg, App.css, App.test.js, index.css, favicon.ico, setupTests.js`.
+* Also we add some files and folder.
     `component folder` where we store all our component files.
 <table>
 <tr>
@@ -138,7 +138,7 @@ to www.knit-with-scrimba.com/about or www.knit-with-scrimba.com/shop
   * You can read about react-router-dom here - https://reactrouter.com/web/guides/quick-start
 
 ### Our component structure 
- * In `app.js` file we define our main component `App` and we use `react-router-dom` to access differnt coponent based on route. In our case only one `\`.
+ * In `app.js` file we define our main component `App` and we use `react-router-dom` to access different component based on route. In our case only one `\`.
  <details> 
     <summary>See Code</summary>
     <h3 style="display:inline-block"><summary>All this code to be written in <u><i>App.js</i></u> fie. </summary></h3>
@@ -173,14 +173,14 @@ export default App;
   </kbd>
 </p> 
 
- * For route `\`, we create a component `Main.js` in `component folder`. 
- * Furture we divide our `MAIN` component in two part `Prediction` and `Example`. **We can see the beuaty of react here that we can modularized our frontend project and manage them individually.**
+ * For route `\`, we create a component `Main.js` in `components folder`. 
+ * Further we divide our `MAIN` component in two parts `Prediction` and `Example`. **We can see the beauty of React here that we can modularize our frontend project and manage them individually.**
  
 ## Prediction component
-* These code has to be written in `component/prediction.js` file.
+* This piece code has to be written in `component/prediction.js` file.
 <details> 
     <summary>See Code</summary>
-    <h3 style="display:inline-block"><summary>All this code to be written in <u><i>App.js</i></u> fie. </summary></h3>
+    <h3 style="display:inline-block"><summary>All this code to be written in <u><i>component/prediction.js</i></u> fie. </summary></h3>
     
 ```js
 import React, { Component} from "react";
@@ -261,14 +261,14 @@ export default PREDICTION;
 </details>
 
 * We will use this component to take input for the model and also display the result.
-* To send `POST` request to the API we have created in flask blog we use a package called `axios`.
+* To send `POST` request to the API we have created in Flask blog we use a package called `axios`.
  <p align="center">
     <kbd>
   <img  src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/react/axios.png">
   </kbd>
 </p> 
 
-* We define two state varible with null values.
+* We define two state variable with null values.
  <p align="center">
     <kbd>
   <img  src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/react/state.png">
@@ -276,7 +276,7 @@ export default PREDICTION;
 </p> 
 
 * We create a Form using `react-bootstrap` and add a `onSubmit` callback to the form. 
- * `onChange`, `onSubmit`, etc are called hooks in react you can learn about them [here](https://reactjs.org/docs/hooks-intro.html).
+ * `onChange`, `onSubmit`, etc are called hooks in React, you can learn about them [here](https://reactjs.org/docs/hooks-intro.html).
  
   <p align="center">
     <kbd>
@@ -284,15 +284,15 @@ export default PREDICTION;
   </kbd>
 </p> 
 
-* We define our `onSubmit` function in our `PREDICTION` component in a way given above.
- * When user click submit button onSubmit function execute which take `input review` from the state varible which changes whenerve any change occur in `Input area.`
- * The above function return the result which will be store in the `result` varible defined in `state` and the result will be diplayed.
+* We define our `onSubmit` function in our `PREDICTION` component in the way given above.
+* When the user clicks on submit button, the onSubmit function is executed which takes `input review` from the state varible, and changes whenever any change occurs in `Input area.`
+* The above function returns the result which will be stored in the `result` variable defined in `state` and the result will be diplayed.
  
 ## Example component
-* These code has to be written in `component/example.js` file.
+* This code goes into the `components/example.js` file.
 <details> 
     <summary>See Code</summary>
-    <h3 style="display:inline-block"><summary>All this code to be written in <u><i>components/example.js</i></u> fie. </summary></h3>
+    <h3 style="display:inline-block"><summary>All this code is to be written in <u><i>components/example.js</i></u> fie. </summary></h3>
     
 ```js
 import React, { Component} from "react";
@@ -336,7 +336,7 @@ export default EXAMPLE;
     
 </details>
 
-* This component is straight forward we add simple text which user can copy and test our model on the fly.
+* This component is straight forward, we add simple text which user can copy and test our model on the fly.
 
 ## Main Component
 * In this component we combine the components we created in above section.
@@ -378,9 +378,9 @@ export default Main;
 </p> 
 
 
-### `Important` http-proxy-middleware 
+### http-proxy-middleware `Important`
 Remenber downloading `http-proxy-middleware`, let's understand why we need a Http proxy middleware.  
-If did not add proxy middleware then we will get error every time we make `POST` request to our flask API.
+If did not add proxy middleware then we will get error every time we make `POST` request to our Flask API.
 > Error
 <p align="center">
     <kbd>
@@ -404,20 +404,10 @@ module.exports = function(app) {
 };
 
  ```
-### React-Bootstrap
-To use `react-bootstrap`, you need to add the line given below in your `public/index.html` file.
-```html
-<link
-      rel="stylesheet"
-      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
-      crossorigin="anonymous" async
-    />
-```
 
 # Deployment on Heroku.
 We expect you have GitHub account and the knowledge of how to create repository. If not, [learn here](https://guides.github.com/activities/hello-world/)
-> For React you need not to add any `Heroku` specific file as Heroku can autometacally build your app.
+> For React you need not to add any `Heroku` specific file as Heroku can automatically build your app.
 
 1. **Now create a repository and push all code on github repository. If you don't know how to do that, learn it [here](https://www.datacamp.com/community/tutorials/git-push-pull)**
 
@@ -484,6 +474,7 @@ We expect you have GitHub account and the knowledge of how to create repository.
     
 ***
 ## Summary and Conclusion
+In this section of the blog we created a basic Frontend that uses the Flask API created in the [previous section](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/tree/main/Webapp/Flask). By now, we assume that you have learnt how to create a basic/ advanced text classifier, create a Flask Application and deploy it on Heroku to get an API, and incorporate a React Frontend project with this created API, and deploy the complete project on Heroku. You can now create your own text classification application and host it using Heroku. In case of any difficulties, feel free to contact us on the contact details mentioned at the end of [Section One](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask).
 
 ***
 ### Refrence
