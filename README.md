@@ -69,7 +69,14 @@ In our tutorial we discuss how to implement [Transfer Learning](https://ruder.io
 ## Contents of this Section
 * [Pre-Requisites for the section](#prerequisite)
 * [Installing Libraries](#install)
-* [Transfer Learning](#transferlearning)
+* [Transfer Learning: Introduction](#transferlearning)
+* [Dataset](#dataset)
+* [Pre-Processing Text](#preprocessing)
+* [Importing Important Libraries](#libraries)
+* [Model Architecture](#architecture)
+* [Pre-Training](#pretraining)
+* [Transfer Learning: Implementation](#implementation)
+* [Conclusions](#conclusions)
 
 ## <a name="prerequisite">Pre-Requisites for this section</a>
 To implement the project you will need the following.
@@ -112,7 +119,7 @@ In case you want to know more about transfer learning, here are a few resources:
 * [A Survey on Deep Transfer Learning](https://arxiv.org/abs/1808.01974)
 * [A Gentle Introduction to Transfer Learning for Deep Learning](https://machinelearningmastery.com/transfer-learning-for-deep-learning/)
 
-## Dataset
+## <a name="dataset">Dataset</a>
 #### IMDb Dataset
 The IMDb Dataset is a collection of 50000 movie reviews collected from the IMDb website which belong to two different classes 'positive' and 'negative'. The dataset has 25000 labeled reviews for training, and another 25000 reviews for testing.
 * Dataset can be downloaded from [http://ai.stanford.edu/~amaas/data/sentiment/](http://ai.stanford.edu/~amaas/data/sentiment/).
@@ -133,7 +140,7 @@ The IMDb Dataset is a collection of 50000 movie reviews collected from the IMDb 
 </details>
  
 
-## Pre-Processing
+## <a name="preprocessing">Pre-Processing</a>
 As discussed in the starter project, Pre-Processing is an important step for text data to make the text more understandable. The complete pre-processing script can be found [here](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Notebook/pre-processing.ipynb). Given below is the explanation of every step along with their relevance for pre-processing.
 * Tweet tokenizer from the NLTK Library is used as follows:
 ```python
@@ -205,7 +212,7 @@ df.to_csv("FILE PATH")
 ## Implementing Transfer Learning
 The complete implementation of this section can be found on our Repository [here](https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Notebook/roberta.ipynb)
 
-### Importing Important Libraries
+### <a name="libraries">Importing Important Libraries</a>
 To implement the code we first need to import some functions from the libraries we installed above. This can be done using:
 ```python
 import numpy as np
@@ -230,7 +237,7 @@ logging.getLogger("transformers.tokenization_utils_base").setLevel(logging.ERROR
 import csv
 ```
 
-### Model Architecture
+### <a name="architecture">Model Architecture</a>
 To create our classifier we used [RoBERTa](https://arxiv.org/pdf/1907.11692.pdf) a pre-training approach for [BERT](https://arxiv.org/pdf/1810.04805.pdf) developed by various Facebook developers. BERT uses [Transformers](https://huggingface.co/transformers/) for Natural Language Understanding and application on various NLP tasks like Sequence Classification, Extractive Question Answering, Language Modeling, Sentiment Analysis, etc.   
 * We use a customized RoBERTa, which contains the RoBERTa model with some additional layers in the end.
 * The model definition contains two parts, the first contains description of layers, the second contains the order of layers.
@@ -311,7 +318,7 @@ def forward(self, input_ids, attention_mask):
 
 * Now that our model is defined, we can start with the implementation.
 
-### Pre-Training
+### <a name="pretraining">Pre-Training</a>
 * Pre-training involves the beginner learning phase of the model.
 * Model is usually trained on a large dataset in this step for a higher number of epochs.
 * Can be referred as the initial learning phase where weights are assigned.
@@ -707,7 +714,7 @@ def evaluate(model, test_loader):
 
 * This concludes our discussion for the Pre-Training. We now move forward to implementing Transfer Learning.
 
-### Implementation of Transfer Learning
+### <a name="implementation">Implementation of Transfer Learning</a>
 
 * We use a replica of the model defined earlier in the above sections.
 * The weights of the model having least validation error are loaded into our new replica model.
@@ -1069,7 +1076,7 @@ evaluate(CLASSIFIER_model, test_set_iter)
 
 * Also, our final model is saved, which we will use for deployment on the web application.
 
-### Conclusions
+### <a name="conclusions">Conclusions</a>
  Upon comparing the results we can draw the following conclusions:
  * There is an improvement in f1-score for both the classes.
  * The accuracy in case of our final model is higher than the one trained before.
