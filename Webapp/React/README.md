@@ -169,7 +169,7 @@ export default App;
 
  <p align="center">
     <kbd>
-  <img  src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/react/main.png">
+  <img  src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/react/app.png">
   </kbd>
 </p> 
 
@@ -372,8 +372,85 @@ export default Main;
     
 </details>
 
-* We first import the components and combine them in a single `div`. As written below.
+* We first import the components and combine them in a single `div`. As given below.
+<p align="center">
+    <kbd>
+  <img  src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/react/main.png">
+  </kbd>
+</p> 
 
+# Deployment on Heroku.
+We expect you have GitHub account and the knowledge of how to create repository. If not, [learn here](https://guides.github.com/activities/hello-world/)
+> For React you need to add any `Heroku` specific file as Heroku can autometacally build your app.
 
+1.**Now create a repository and push all code on github repository. If you don't know how to do that, learn it [here](https://www.datacamp.com/community/tutorials/git-push-pull)**
 
+2. **Create New App.**
+    <details> 
+        <summary>Detail Screenshot</summary>
+        <p align="center">
+            <kbd>
+              <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/react/h1.png">
+                </kbd>
+        </p>
+    </details>
+
+3. **Choose App name and region.**
+    <details> 
+        <summary>Detail Screenshot</summary>
+        <p align="center">
+            <kbd>
+              <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/react/h2.png">
+                </kbd>
+        </p>
+    </details>
+
+4. **Link your Github account with Heroku, search your repository where you have pushed all your code and `connect`.**
+    <details> 
+        <summary>Detail Screenshot</summary>
+        <p align="center">
+            <kbd>
+              <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/react/h3.png">
+                </kbd>
+        </p>
+    </details>
+
+5. **Choose branch, `Enable automatic deploy` so that it can automatically build your app when you push any changes to your repository and hit `Deploy Branch`.**
+    <details> 
+        <summary>Detail Screenshot</summary>
+        <p align="center">
+            <kbd>
+              <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/react/h4.png">
+                </kbd>
+        </p>
+    </details>
+
+6. **You can see App Build log. It will display any errors if occurs.**
+
+    <details> 
+        <summary>Detail Screenshot</summary>
+        <p align="center">
+            <kbd>
+              <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/react/h5.png">
+                </kbd>
+        </p>
+    </details> 
+    
+7. **Finally after successful build you can launch your app by clicking `View`**
+    <details> 
+        <summary>Detail Screenshot</summary>
+        <p align="center">
+            <kbd>
+              <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/react/h6.png">
+                </kbd>
+        </p>
+    </details> 
+    
+    
+***
+## Summary and Conclusion
+***
+### Refrence
+* https://www.digitalocean.com/community/tutorials/how-to-make-a-web-application-using-flask-in-python-3
+*** 
 
