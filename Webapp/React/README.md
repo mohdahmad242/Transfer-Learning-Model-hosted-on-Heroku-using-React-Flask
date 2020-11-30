@@ -378,7 +378,7 @@ export default Main;
 </p> 
 
 
-### http-proxy-middleware `Important`
+### `Important` http-proxy-middleware 
 Remenber downloading `http-proxy-middleware`, let's understand why we need a Http proxy middleware.  
 If did not add proxy middleware then we will get error every time we make `POST` request to our flask API.
 > Error
@@ -404,6 +404,16 @@ module.exports = function(app) {
 };
 
  ```
+### React-Bootstrap
+To use `react-bootstrap`, you need to add the line given below in your `public/index.html` file.
+```html
+<link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+      crossorigin="anonymous" async
+    />
+```
 
 # Deployment on Heroku.
 We expect you have GitHub account and the knowledge of how to create repository. If not, [learn here](https://guides.github.com/activities/hello-world/)
