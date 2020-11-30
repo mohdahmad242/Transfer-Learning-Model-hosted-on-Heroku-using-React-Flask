@@ -366,8 +366,6 @@ class Main extends Component {
 
 export default Main;
 
-
-
 ```
     
 </details>
@@ -379,18 +377,46 @@ export default Main;
   </kbd>
 </p> 
 
+
+### http-proxy-middleware `Important`
+Remenber downloading `http-proxy-middleware`, let's understand why we need a Http proxy middleware.  
+If did not add proxy middleware then we will get error every time we make `POST` request to our flask API.
+> Error
+<p align="center">
+    <kbd>
+  <img  src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/react/error.png">
+  </kbd>
+</p> 
+
+> `Brief Explanation`If you don’t control the server your frontend JavaScript code is sending a request to, and the problem with the response from that server is just the lack of the necessary Access-Control-Allow-Origin header.
+Read more about this issue [here](https://stackoverflow.com/questions/43871637/no-access-control-allow-origin-header-is-present-on-the-requested-resource-whe)
+
+* **To solve this problem we use http-proxy-middleware package**.
+ 1. For this we have created a file `setupProxy.js` in main directory.
+ 2. Add the code written below, this code helps to create proxy for our `POST` request.
+ ```js
+ const { createProxyMiddleware } = require('http-proxy-middleware');
+
+module.exports = function(app) {
+  app.use("/predict",
+    createProxyMiddleware( { target: "YOUR_FLASK_URL" ,changeOrigin: true})
+  );
+};
+
+ ```
+
 # Deployment on Heroku.
 We expect you have GitHub account and the knowledge of how to create repository. If not, [learn here](https://guides.github.com/activities/hello-world/)
-> For React you need to add any `Heroku` specific file as Heroku can autometacally build your app.
+> For React you need not to add any `Heroku` specific file as Heroku can autometacally build your app.
 
-1.**Now create a repository and push all code on github repository. If you don't know how to do that, learn it [here](https://www.datacamp.com/community/tutorials/git-push-pull)**
+1. **Now create a repository and push all code on github repository. If you don't know how to do that, learn it [here](https://www.datacamp.com/community/tutorials/git-push-pull)**
 
 2. **Create New App.**
     <details> 
         <summary>Detail Screenshot</summary>
         <p align="center">
             <kbd>
-              <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/react/h1.png">
+              <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/react/1.png">
                 </kbd>
         </p>
     </details>
@@ -400,7 +426,7 @@ We expect you have GitHub account and the knowledge of how to create repository.
         <summary>Detail Screenshot</summary>
         <p align="center">
             <kbd>
-              <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/react/h2.png">
+              <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/react/2.png">
                 </kbd>
         </p>
     </details>
@@ -410,7 +436,7 @@ We expect you have GitHub account and the knowledge of how to create repository.
         <summary>Detail Screenshot</summary>
         <p align="center">
             <kbd>
-              <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/react/h3.png">
+              <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/react/3.png">
                 </kbd>
         </p>
     </details>
@@ -420,18 +446,17 @@ We expect you have GitHub account and the knowledge of how to create repository.
         <summary>Detail Screenshot</summary>
         <p align="center">
             <kbd>
-              <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/react/h4.png">
+              <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/react/4.png">
                 </kbd>
         </p>
     </details>
 
 6. **You can see App Build log. It will display any errors if occurs.**
-
     <details> 
         <summary>Detail Screenshot</summary>
         <p align="center">
             <kbd>
-              <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/react/h5.png">
+              <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/react/5.png">
                 </kbd>
         </p>
     </details> 
@@ -441,7 +466,7 @@ We expect you have GitHub account and the knowledge of how to create repository.
         <summary>Detail Screenshot</summary>
         <p align="center">
             <kbd>
-              <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/react/h6.png">
+              <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/react/6.png">
                 </kbd>
         </p>
     </details> 
@@ -449,8 +474,11 @@ We expect you have GitHub account and the knowledge of how to create repository.
     
 ***
 ## Summary and Conclusion
+
 ***
 ### Refrence
-* https://www.digitalocean.com/community/tutorials/how-to-make-a-web-application-using-flask-in-python-3
+* https://reactjs.org/tutorial/tutorial.html
+* https://www.freecodecamp.org/news/react-router-in-5-minutes/
+* https://stackoverflow.com/questions/43871637/no-access-control-allow-origin-header-is-present-on-the-requested-resource-whe
 *** 
 
