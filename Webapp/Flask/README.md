@@ -71,6 +71,10 @@ Final pipeline is as follows -
     **Data -> Pre-processing -> Model -> Prediction -> Final Result**  
 
 
+<p align="center">
+  <img src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/webapplicationFlowchart.jpg" />
+</p>
+
 
 <details> 
     <summary>Final code present here.</summary>
