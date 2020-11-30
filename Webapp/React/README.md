@@ -44,6 +44,11 @@ To create new project witre following code in terminal of a directory of your ch
 ```
 * To run this initial project `cd` in to `react-app` directory and hit `npm start`.
 > It will pop up new tab in your browser serving on `Localhost 3000`
+<p align="center">
+    <kbd>
+  <img  src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/react/first.png">
+  </kbd>
+</p> 
 
 * Now we need to download some packages we will use in our project.
 ```bash
@@ -125,26 +130,162 @@ what React Router does is conditionally render certain components to display
 depending on the route being used in the URL (/ for the home page, /about for the about page, etc.).
 
 For example, we can use React Router to connect www.knit-with-scrimba.com/ 
-to www.knit-with-scrimba.com/about or www.knit-with-scrimba.com/shop
+to www.knit-with-scrimba.com/about or www.knit-with-scrimba.com/shop 
 ```
+[REF](https://www.freecodecamp.org/news/react-router-in-5-minutes/)
+
 * Although we are using only use one route for our project, it is good to learn something extra here.
   * You can read about react-router-dom here - https://reactrouter.com/web/guides/quick-start
 
 ### Our component structure 
  * In `app.js` file we define our main component `App` and we use `react-router-dom` to access differnt coponent based on route. In our case only one `\`.
+ <details> 
+    <summary>See Code</summary>
+    <h3 style="display:inline-block"><summary>All this code to be written in <u><i>App.js</i></u> fie. </summary></h3>
+    
+```js
+import main from "./components/main"; // Importing MAIN component
+import {
+  BrowserRouter as Router,
+  Route
+} from "react-router-dom";
+
+function App() {
+  return (
+    <div className="App">
+      <Router>
+          <Route exact path="/" component={main} />
+      </Router>
+    </div>
+  );
+}
+
+export default App;
+
+
+```
+    
+</details>
+
+ <p align="center">
+    <kbd>
+  <img  src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/react/main.png">
+  </kbd>
+</p> 
+
  * For route `\`, we create a component `Main.js` in `component folder`. 
  * Furture we divide our `MAIN` component in two part `Prediction` and `Example`. **We can see the beuaty of react here that we can modularized our frontend project and manage them individually.**
  
 ## Prediction component
 * These code has to be written in `component/prediction.js` file.
+<details> 
+    <summary>See Code</summary>
+    <h3 style="display:inline-block"><summary>All this code to be written in <u><i>App.js</i></u> fie. </summary></h3>
+    
+```js
+import React, { Component} from "react";
+
+import {
+    Badge,
+    Button,
+    InputGroup,
+    Form
+  } from "react-bootstrap";
+  
+import axios from "axios";
+
+class PREDICTION extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            review:null,
+            result:null
+        };
+        this.onChange = this.onChange.bind(this)
+        this.onSubmit = this.onSubmit.bind(this)
+    }
+
+
+    onChange(e) {
+        this.setState({ [e.target.name]: e.target.value })
+      }
+  
+      onSubmit(e) {
+        this.setState({result: null})
+          e.preventDefault()
+          let data ={
+              "review": this.state.review
+          }
+          axios.post(`/predict`, data).then(res => {
+            console.log(res, "result");
+            this.setState({result: res.data})
+                });
+      }
+
+  render() {
+    return (
+          <div style={{padding:"50px", background:"#c4ffe6", height:"100%"}}>
+            <h3 style={{margin:"auto", marginBottom:"20px"}}>Enter movie review here to predict positive or negative(min 200 Character).</h3>
+            
+            <InputGroup size="lg" style={{width:"100%"}}>
+            <Form onSubmit={this.onSubmit} style={{width:"100%"}}>
+                    <Form.Group >
+                        <Form.Control 
+                        style={{width:"100%"}}
+                        size="lg"
+                        as="textarea" 
+                        placeholder="Enter movie review... " 
+                        type="text"
+                        name="review"
+                        value={this.state.review}
+                        onChange={this.onChange}
+                        />
+                        </Form.Group>
+                        <Button variant="primary" type="submit" style={{marginBottom:"10px"}}>
+                            Predict
+                        </Button>
+                </Form>
+            </InputGroup>
+            {this.state.review == null ? " " : <p><h4>Entered review - </h4> {this.state.review}"</p>}
+            {this.state.result == null ? " " : <h4>Predicted value - <Badge variant="primary">{this.state.result.toUpperCase()}</Badge></h4>}
+            
+          </div>
+    );
+  }
+}
+
+export default PREDICTION;
+
+```
+    
+</details>
 * We will use this component to take input for the model and also display the result.
 * To send `POST` request to the API we have created in flask blog we use a package called `axios`.
+ <p align="center">
+    <kbd>
+  <img  src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/react/axios.png">
+  </kbd>
+</p> 
+
 * We define two state varible with null values.
+ <p align="center">
+    <kbd>
+  <img  src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/react/state.png">
+  </kbd>
+</p> 
+
 * We create a Form using `react-bootstrap` and add a `onSubmit` callback to the form. 
  * `onChange`, `onSubmit`, etc are called hooks in react you can learn about them [here](https://reactjs.org/docs/hooks-intro.html).
-* We define our `onSubmit` function in our `PREDICTION` component in a way given below.
+ 
+  <p align="center">
+    <kbd>
+  <img  src="https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Images/react/hook.png">
+  </kbd>
+</p> 
+
+* We define our `onSubmit` function in our `PREDICTION` component in a way given above.
  * When user click submit button onSubmit function execute which take `input review` from the state varible which changes whenerve any change occur in `Input area.`
- * This function return the result which the `result` varible in `state` and the result is diplayed.
+ * The above function return the result which will be store in the `result` varible defined in `state` and the result will be diplayed.
  
 ## Example component
 * These code has to be written in `component/example.js` file.
