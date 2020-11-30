@@ -5,17 +5,38 @@
 <h2 align="center">Training Deep Learning Models</h2>
 <p align="center">
  <a href="https://circleci.com/gh/huggingface/transformers">
-  <img alt="Build" src="https://img.shields.io/badge/python-3%2B-brightgreen?logo=Python">
- </a>
+        <img alt="Build" src="https://img.shields.io/badge/python-3%2B-brightgreen?logo=Python">
+    </a>
+    <a href="https://circleci.com/gh/huggingface/transformers">
+        <img alt="Build" src="https://img.shields.io/badge/git-2.29.2-brightgreen?logo=git">
+    </a>
+    <a href="https://circleci.com/gh/huggingface/transformers">
+        <img alt="Heroku" src="http://img.shields.io/static/v1?label=Pytorch&message=1.6.0&color=brightgreen&logo=Pytorch">
+    </a>
+    <a href="https://circleci.com/gh/huggingface/transformers">
+        <img alt="Heroku" src="http://img.shields.io/static/v1?label=Flask&message=1.1.1&color=brightgreen&logo=Flask">
+    </a>
  <a href="https://circleci.com/gh/huggingface/transformers">
-  <img alt="Build" src="http://img.shields.io/static/v1?label=Pytorch&message=1.6.0&color=brightgreen&logo=Pytorch">
- </a>
+        <img alt="Build" src="https://img.shields.io/badge/React-17.0.1-brightgreen?logo=React">
+    </a>
+    <a href="https://circleci.com/gh/huggingface/transformers">
+        <img alt="Heroku" src="http://img.shields.io/static/v1?label=react-router-dom&message=5.2.0&color=brightgreen&logo=ReactRouter">
+    </a>
+    <a href="https://circleci.com/gh/huggingface/transformers">
+        <img alt="Heroku" src="http://img.shields.io/static/v1?label=React-Bootstrap&message=1.4.0&color=brightgreen&logo=Bootstrap">
+    </a>
+    <a href="https://circleci.com/gh/huggingface/transformers">
+        <img alt="Heroku" src="http://img.shields.io/static/v1?label=Postman&message=tested&color=brightgreen&logo=Postman">
+    </a>
+    <a href="https://circleci.com/gh/huggingface/transformers">
+        <img alt="Heroku" src="http://img.shields.io/static/v1?label=Heroku&message=Deployed&color=brightgreen&logo=Heroku">
+    </a>
 </p>
 <br>
 
 ## Online Demonstration
 * Web Application: https://imdbmovienew.herokuapp.com/
-* Google Colab Notebook: https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Notebook/roberta.ipynb
+* Google Colab Notebook: https://github.com/ahmadkhan242/Transfer-Learning-Model-hosted-on-Heroku-using-React-Flask/blob/main/Notebook/roberta_imdb.ipynb
 ## Overview
  
 <p align="center">
