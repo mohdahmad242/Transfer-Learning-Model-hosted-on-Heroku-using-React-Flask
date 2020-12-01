@@ -260,7 +260,7 @@ To create our classifier we used [RoBERTa](https://arxiv.org/pdf/1907.11692.pdf)
 * Similarly ```self.l2``` has 256 input neurons and outputs 64 units or neurons.
 * ```self.l3``` is our final layer having 2 output neurons. These 2 output neurons decide the class of the input sentence to the model.
 * ```self.bn1``` and ```self.bn2``` are [Normalization layers](https://pytorch.org/docs/stable/generated/torch.nn.LayerNorm.html). They normalize the output of the layers and ensure that the value lies between 0 and 1.
-* The image below depicts the architecture of the basic BERT model.
+* Bert Architecture is build by stacking a few encoder from the transformer architecture. The image below depicts the transformer architecture.
 
 <p align="center">
   <img src="https://aisc.ai.science/static/post-assets/bert-pretraining-transformers-bidirectionality/transformer.png" />
